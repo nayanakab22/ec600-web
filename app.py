@@ -1,99 +1,126 @@
-import json
-import os
-import uuid
-from datetime import datetime, timezone
-
-from fastapi import FastAPI, Request, Header, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-DEVICE_KEY = os.environ.get("DEVICE_KEY", "change-me-device-key")   # same as firmware
-API_KEY = os.environ.get("API_KEY", "")                              # for dashboard commands
+from datetime import datetime, timezone
+import json
 
 app = FastAPI(title="EC600 T-Box Server")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
-devices = {}        # tboxId -> latest telemetry
-pending_cmds = {}   # tboxId -> {"operation", "rid"}
-cmd_results = {}    # rid -> result from device
+# Static files
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static"
+)
 
-ALLOWED_OPS = {
-    "remote_lock_charge", "remote_unlock_charge",
-    "remote_lock_nocharge", "remote_unlock_nocharge",
-    "data_flush", "reboot",
-}
+# HTML templates
+templates = Jinja2Templates(
+    directory="templates"
+)
 
-
-def check_device(key: str):
-    if key != DEVICE_KEY:
-        raise HTTPException(401, "Bad device key")
+# Store latest telemetry for each T-Box
+devices = {}
 
 
-def check_admin(key: str):
-    if not API_KEY or key != API_KEY:
-        raise HTTPException(401, "Unauthorized")
+# --------------------------------------------------
+# Dashboard
+# --------------------------------------------------
 
-
-# ---------------- dashboard ----------------
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
 
+    return templates.TemplateResponse(
+        request,
+        "dashboard.html"
+    )
+
+
+# --------------------------------------------------
+# Receive telemetry from EC600
+# --------------------------------------------------
+
+@app.post("/api/telemetry")
+async def receive_telemetry(request: Request):
+
+    try:
+
+        # Read JSON sent by EC600
+        data = await request.json()
+
+        # Get T-Box ID
+        tbox_id = data.get("tboxId")
+
+        # Check T-Box ID
+        if not tbox_id:
+
+            return {
+                "status": "error",
+                "message": "tboxId is required"
+            }
+
+        # Add server receive time
+        data["_server_time"] = datetime.now(
+            timezone.utc
+        ).isoformat()
+
+        # Store latest data
+        devices[tbox_id] = data
+
+        # Print received data in Render logs
+        print(
+            "Telemetry received:",
+            tbox_id
+        )
+
+        print(
+            json.dumps(
+                data,
+                indent=2
+            )
+        )
+
+        # Response to EC600
+        return {
+            "status": "ok",
+            "tboxId": tbox_id
+        }
+
+    except Exception as e:
+
+        print(
+            "Telemetry error:",
+            str(e)
+        )
+
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
+# --------------------------------------------------
+# Get all T-Box data
+# --------------------------------------------------
 
 @app.get("/api/devices")
 async def get_devices():
+
     return devices
 
 
+# --------------------------------------------------
+# Get one T-Box
+# --------------------------------------------------
+
 @app.get("/api/device/{tbox_id}")
 async def get_device(tbox_id: str):
+
     if tbox_id not in devices:
-        raise HTTPException(404, "Device not found")
+
+        return {
+            "status": "error",
+            "message": "Device not found"
+        }
+
     return devices[tbox_id]
-
-
-# ---------------- device -> server ----------------
-@app.post("/api/telemetry")
-async def receive_telemetry(request: Request, x_device_key: str = Header(default="")):
-    check_device(x_device_key)
-    data = await request.json()
-    tbox_id = data.get("tboxId")
-    if not tbox_id:
-        raise HTTPException(400, "tboxId is required")
-    data["_server_time"] = datetime.now(timezone.utc).isoformat()
-    devices[tbox_id] = data
-    return {"status": "ok", "tboxId": tbox_id}
-
-
-@app.get("/api/device/{tbox_id}/command")
-async def device_poll(tbox_id: str, x_device_key: str = Header(default="")):
-    """Device polls here. Returns one pending command (then clears it), or {}."""
-    check_device(x_device_key)
-    return pending_cmds.pop(tbox_id, {})
-
-
-@app.post("/api/device/{tbox_id}/command/result")
-async def device_result(tbox_id: str, request: Request, x_device_key: str = Header(default="")):
-    check_device(x_device_key)
-    body = await request.json()
-    cmd_results[body.get("rid")] = body
-    return {"status": "ok"}
-
-
-# ---------------- dashboard -> device ----------------
-@app.post("/api/device/{tbox_id}/command")
-async def queue_command(tbox_id: str, request: Request, x_api_key: str = Header(default="")):
-    check_admin(x_api_key)
-    op = (await request.json()).get("operation")
-    if op not in ALLOWED_OPS:
-        raise HTTPException(400, "Bad operation")
-    rid = uuid.uuid4().hex[:8]
-    pending_cmds[tbox_id] = {"operation": op, "rid": rid}
-    return {"rid": rid, "queued": True}
-
-
-@app.get("/api/response/{rid}")
-async def get_response(rid: str):
-    return cmd_results.get(rid, {"status": "pending"})
