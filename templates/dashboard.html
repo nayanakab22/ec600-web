@@ -751,18 +751,6 @@
 
         </div>
 
-
-        <button id="mapBtn"
-                onclick="openInGoogleMaps()"
-                disabled
-                style="margin-top:16px;padding:12px 20px;
-                       border:none;border-radius:8px;
-                       background:#2563eb;color:white;
-                       font-size:15px;font-weight:bold;
-                       cursor:pointer;">
-            📍 View on Google Maps
-        </button>
-
     </div>
 
 </div>
@@ -770,25 +758,6 @@
 
 
 <script>
-
-let lastLat = null;
-let lastLon = null;
-
-
-function openInGoogleMaps() {
-
-    if (lastLat === null || lastLon === null) {
-        return;
-    }
-
-    const url =
-        "https://www.google.com/maps?q=" +
-        lastLat + "," + lastLon;
-
-    window.open(url, "_blank");
-
-}
-
 
 function valueOrDash(value) {
 
@@ -1136,9 +1105,7 @@ async function updateDashboard() {
         // GPS
         // ---------------------------------------------
 
-        if (result.gps &&
-            result.gps.Latitude !== undefined &&
-            result.gps.Longitude !== undefined) {
+        if (result.gps) {
 
             setText(
                 "latitude",
@@ -1149,16 +1116,6 @@ async function updateDashboard() {
                 "longitude",
                 result.gps.Longitude
             );
-
-            lastLat = result.gps.Latitude;
-            lastLon = result.gps.Longitude;
-
-            const btn =
-                document.getElementById("mapBtn");
-
-            if (btn) {
-                btn.disabled = false;
-            }
 
         }
 
