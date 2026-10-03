@@ -96,14 +96,6 @@
             padding-bottom: 12px;
         }
 
-        .connected {
-            color: #16a34a;
-        }
-
-        .disconnected {
-            color: #dc2626;
-        }
-
         .data-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -192,7 +184,6 @@
             margin-top: 2px;
         }
 
-        /* highlight the highest / lowest cell */
         .cell.max {
             background: #fee2e2;
             border-color: #fca5a5;
@@ -316,60 +307,64 @@
         <div class="top-info">
 
             <div class="info-item">
-
-                <div class="info-label">
-                    T-Box
-                </div>
-
-                <div class="info-value"
-                     id="tboxId">
-                    -
-                </div>
-
+                <div class="info-label">T-Box</div>
+                <div class="info-value" id="tboxId">-</div>
             </div>
 
-
             <div class="info-item">
-
-                <div class="info-label">
-                    Software Version
-                </div>
-
-                <div class="info-value"
-                     id="softwareVersion">
-                    -
-                </div>
-
+                <div class="info-label">Software Version</div>
+                <div class="info-value" id="softwareVersion">-</div>
             </div>
 
-
             <div class="info-item">
-
-                <div class="info-label">
-                    Last Update
-                </div>
-
-                <div class="info-value"
-                     id="lastUpdate">
-                    -
-                </div>
-
+                <div class="info-label">Last Update</div>
+                <div class="info-value" id="lastUpdate">-</div>
             </div>
 
-
             <div class="info-item">
-
-                <span id="connectionStatus"
-                      class="status offline">
+                <span id="connectionStatus" class="status offline">
                     Waiting for data
                 </span>
-
             </div>
 
         </div>
 
     </div>
 
+
+    <!-- =====================================================
+         COMBINED PACK (Battery 1 + Battery 2)
+         ===================================================== -->
+
+    <div class="top-card">
+
+        <div class="battery-title" style="margin-bottom:14px;">
+            Combined Pack
+        </div>
+
+        <div class="data-grid">
+
+            <div class="data-box soc-box">
+                <div class="data-label">Combined SOC</div>
+                <div class="data-value" id="combinedSoc">- %</div>
+                <div class="soc-bar">
+                    <div class="soc-fill" id="combinedSocBar"></div>
+                </div>
+            </div>
+
+            <div class="data-box">
+                <div class="data-label">Combined Capacity</div>
+                <div class="data-value" id="combinedCapacity">-</div>
+            </div>
+
+            <div class="data-box">
+                <div class="data-label">Combined Current</div>
+                <div class="data-value" id="combinedCurrent">- A</div>
+            </div>
+
+        </div>
+
+    </div>
 
 
     <!-- =====================================================
@@ -383,352 +378,144 @@
 
         <div class="battery-card">
 
-            <div class="battery-title">
-                Battery 1
-            </div>
-
+            <div class="battery-title">Battery 1</div>
 
             <div class="data-grid">
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        BMS ID
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Id">
-                        -
-                    </div>
-
+                    <div class="data-label">BMS ID</div>
+                    <div class="data-value" id="b1Id">-</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Voltage
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Voltage">
-                        - V
-                    </div>
-
+                    <div class="data-label">Voltage</div>
+                    <div class="data-value" id="b1Voltage">- V</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Current
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Current">
-                        - A
-                    </div>
-
+                    <div class="data-label">Current</div>
+                    <div class="data-value" id="b1Current">- A</div>
                 </div>
-
 
                 <div class="data-box soc-box">
-
-                    <div class="data-label">
-                        SOC
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Soc">
-                        - %
-                    </div>
-
+                    <div class="data-label">SOC</div>
+                    <div class="data-value" id="b1Soc">- %</div>
                     <div class="soc-bar">
-
-                        <div class="soc-fill"
-                             id="b1SocBar">
-                        </div>
-
+                        <div class="soc-fill" id="b1SocBar"></div>
                     </div>
-
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        SOH
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Soh">
-                        - %
-                    </div>
-
+                    <div class="data-label">SOH</div>
+                    <div class="data-value" id="b1Soh">- %</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Temperature
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Temperature">
-                        - °C
-                    </div>
-
+                    <div class="data-label">Temperature</div>
+                    <div class="data-value" id="b1Temperature">- °C</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Capacity
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Capacity">
-                        -
-                    </div>
-
+                    <div class="data-label">Capacity</div>
+                    <div class="data-value" id="b1Capacity">-</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Cycle Count
-                    </div>
-
-                    <div class="data-value"
-                         id="b1Cycle">
-                        -
-                    </div>
-
+                    <div class="data-label">Cycle Count</div>
+                    <div class="data-value" id="b1Cycle">-</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Cell Difference
-                    </div>
-
-                    <div class="data-value"
-                         id="b1CellDiff">
-                        -
-                    </div>
-
+                    <div class="data-label">Cell Difference</div>
+                    <div class="data-value" id="b1CellDiff">-</div>
                 </div>
 
             </div>
-
 
             <div class="errors">
-
                 <b>Errors:</b>
-
-                <span id="b1Errors">
-                    -
-                </span>
-
+                <span id="b1Errors">-</span>
             </div>
 
-
-            <!-- Cell voltages -->
-
             <div class="cell-section">
-
                 <h4>Cell Voltages</h4>
-
-                <div class="cell-grid"
-                     id="b1Cells">
-                </div>
-
+                <div class="cell-grid" id="b1Cells"></div>
             </div>
 
         </div>
-
 
 
         <!-- ================= BATTERY 2 ================= -->
 
         <div class="battery-card">
 
-            <div class="battery-title">
-                Battery 2
-            </div>
-
+            <div class="battery-title">Battery 2</div>
 
             <div class="data-grid">
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        BMS ID
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Id">
-                        -
-                    </div>
-
+                    <div class="data-label">BMS ID</div>
+                    <div class="data-value" id="b2Id">-</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Voltage
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Voltage">
-                        - V
-                    </div>
-
+                    <div class="data-label">Voltage</div>
+                    <div class="data-value" id="b2Voltage">- V</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Current
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Current">
-                        - A
-                    </div>
-
+                    <div class="data-label">Current</div>
+                    <div class="data-value" id="b2Current">- A</div>
                 </div>
-
 
                 <div class="data-box soc-box">
-
-                    <div class="data-label">
-                        SOC
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Soc">
-                        - %
-                    </div>
-
+                    <div class="data-label">SOC</div>
+                    <div class="data-value" id="b2Soc">- %</div>
                     <div class="soc-bar">
-
-                        <div class="soc-fill"
-                             id="b2SocBar">
-                        </div>
-
+                        <div class="soc-fill" id="b2SocBar"></div>
                     </div>
-
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        SOH
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Soh">
-                        - %
-                    </div>
-
+                    <div class="data-label">SOH</div>
+                    <div class="data-value" id="b2Soh">- %</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Temperature
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Temperature">
-                        - °C
-                    </div>
-
+                    <div class="data-label">Temperature</div>
+                    <div class="data-value" id="b2Temperature">- °C</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Capacity
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Capacity">
-                        -
-                    </div>
-
+                    <div class="data-label">Capacity</div>
+                    <div class="data-value" id="b2Capacity">-</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Cycle Count
-                    </div>
-
-                    <div class="data-value"
-                         id="b2Cycle">
-                        -
-                    </div>
-
+                    <div class="data-label">Cycle Count</div>
+                    <div class="data-value" id="b2Cycle">-</div>
                 </div>
 
-
                 <div class="data-box">
-
-                    <div class="data-label">
-                        Cell Difference
-                    </div>
-
-                    <div class="data-value"
-                         id="b2CellDiff">
-                        -
-                    </div>
-
+                    <div class="data-label">Cell Difference</div>
+                    <div class="data-value" id="b2CellDiff">-</div>
                 </div>
 
             </div>
-
 
             <div class="errors">
-
                 <b>Errors:</b>
-
-                <span id="b2Errors">
-                    -
-                </span>
-
+                <span id="b2Errors">-</span>
             </div>
 
-
-            <!-- Cell voltages -->
-
             <div class="cell-section">
-
                 <h4>Cell Voltages</h4>
-
-                <div class="cell-grid"
-                     id="b2Cells">
-                </div>
-
+                <div class="cell-grid" id="b2Cells"></div>
             </div>
 
         </div>
 
     </div>
-
 
 
     <!-- =====================================================
@@ -737,41 +524,21 @@
 
     <div class="gps-card">
 
-        <h2>
-            GPS
-        </h2>
+        <h2>GPS</h2>
 
         <div class="data-grid">
 
             <div class="data-box">
-
-                <div class="data-label">
-                    Latitude
-                </div>
-
-                <div class="data-value"
-                     id="latitude">
-                    -
-                </div>
-
+                <div class="data-label">Latitude</div>
+                <div class="data-value" id="latitude">-</div>
             </div>
 
-
             <div class="data-box">
-
-                <div class="data-label">
-                    Longitude
-                </div>
-
-                <div class="data-value"
-                     id="longitude">
-                    -
-                </div>
-
+                <div class="data-label">Longitude</div>
+                <div class="data-value" id="longitude">-</div>
             </div>
 
         </div>
-
 
         <button id="mapBtn"
                 class="map-btn"
@@ -783,7 +550,6 @@
     </div>
 
 </div>
-
 
 
 <script>
@@ -809,12 +575,8 @@ function openInGoogleMaps() {
 
 function valueOrDash(value) {
 
-    if (value === undefined ||
-        value === null ||
-        value === "") {
-
+    if (value === undefined || value === null || value === "") {
         return "-";
-
     }
 
     return value;
@@ -827,9 +589,7 @@ function setText(id, value) {
     const element = document.getElementById(id);
 
     if (element) {
-
         element.innerText = valueOrDash(value);
-
     }
 
 }
@@ -837,21 +597,16 @@ function setText(id, value) {
 
 function updateCellVoltages(containerId, cellVoltages) {
 
-    const container =
-        document.getElementById(containerId);
+    const container = document.getElementById(containerId);
 
     if (!container) {
         return;
     }
 
-    if (!Array.isArray(cellVoltages) ||
-        cellVoltages.length === 0) {
-
+    if (!Array.isArray(cellVoltages) || cellVoltages.length === 0) {
         container.innerHTML =
             "<p style='color:#94a3b8;margin:0;'>No cell data</p>";
-
         return;
-
     }
 
     const maxV = Math.max(...cellVoltages);
@@ -892,136 +647,138 @@ function updateBattery(prefix, battery) {
         return;
     }
 
+    setText(prefix + "Id", battery.bmsId);
 
-    setText(
-        prefix + "Id",
-        battery.bmsId
-    );
-
-
-    /*
-     * BMS voltage is sent as:
-     *
-     * 7993 = 79.93 V
-     */
-
+    // BMS voltage is sent as: 7993 = 79.93 V
     if (battery.voltage !== undefined) {
-
         setText(
             prefix + "Voltage",
             (Number(battery.voltage) / 100).toFixed(2) + " V"
         );
-
     }
 
-
-    /*
-     * Current is normally sent in 0.1 A units.
-     *
-     * Example:
-     * 123 = 12.3 A
-     */
-
+    // Current is sent in 0.1 A units: 123 = 12.3 A
     if (battery.current !== undefined) {
-
         setText(
             prefix + "Current",
             (Number(battery.current) / 10).toFixed(1) + " A"
         );
-
     }
-
 
     if (battery.soc !== undefined) {
 
         const soc = Number(battery.soc);
 
-        setText(
-            prefix + "Soc",
-            soc + " %"
-        );
+        setText(prefix + "Soc", soc + " %");
 
-
-        const bar = document.getElementById(
-            prefix + "SocBar"
-        );
+        const bar = document.getElementById(prefix + "SocBar");
 
         if (bar) {
-
             bar.style.width =
                 Math.max(0, Math.min(100, soc)) + "%";
-
         }
 
     }
 
-
     if (battery.soh !== undefined) {
-
-        setText(
-            prefix + "Soh",
-            battery.soh + " %"
-        );
-
+        setText(prefix + "Soh", battery.soh + " %");
     }
-
 
     if (battery.temperature !== undefined) {
-
-        setText(
-            prefix + "Temperature",
-            battery.temperature + " °C"
-        );
-
+        setText(prefix + "Temperature", battery.temperature + " °C");
     }
-
 
     if (battery.Capacity !== undefined) {
-
-        setText(
-            prefix + "Capacity",
-            battery.Capacity
-        );
-
+        setText(prefix + "Capacity", battery.Capacity);
     }
-
 
     if (battery.cycleCount !== undefined) {
-
-        setText(
-            prefix + "Cycle",
-            battery.cycleCount
-        );
-
+        setText(prefix + "Cycle", battery.cycleCount);
     }
-
 
     if (battery.cellDiff !== undefined) {
-
-        setText(
-            prefix + "CellDiff",
-            battery.cellDiff
-        );
-
+        setText(prefix + "CellDiff", battery.cellDiff);
     }
-
 
     if (battery.errors !== undefined) {
+        setText(prefix + "Errors", battery.errors);
+    }
 
-        setText(
-            prefix + "Errors",
-            battery.errors
-        );
+    updateCellVoltages(prefix + "Cells", battery.cellVoltages);
+
+}
+
+
+function updateCombined(battery1, battery2) {
+
+    const b1 = battery1 || {};
+    const b2 = battery2 || {};
+
+    const haveB1 = battery1 !== undefined && battery1 !== null;
+    const haveB2 = battery2 !== undefined && battery2 !== null;
+
+    if (!haveB1 && !haveB2) {
+        return;
+    }
+
+    // Combined SOC: weighted by each battery's capacity so a
+    // bigger pack counts for more of the overall percentage.
+    // Falls back to a plain average if capacity is missing.
+
+    const cap1 = Number(b1.Capacity) || 0;
+    const cap2 = Number(b2.Capacity) || 0;
+    const soc1 = Number(b1.soc);
+    const soc2 = Number(b2.soc);
+
+    let combinedSoc = null;
+
+    if (!isNaN(soc1) && !isNaN(soc2)) {
+
+        combinedSoc = (cap1 + cap2 > 0)
+            ? (soc1 * cap1 + soc2 * cap2) / (cap1 + cap2)
+            : (soc1 + soc2) / 2;
+
+    } else if (!isNaN(soc1)) {
+        combinedSoc = soc1;
+    } else if (!isNaN(soc2)) {
+        combinedSoc = soc2;
+    }
+
+    if (combinedSoc !== null) {
+
+        setText("SOC", combinedSoc.toFixed(1) + " %");
+
+        const bar = document.getElementById("combinedSocBar");
+
+        if (bar) {
+            bar.style.width =
+                Math.max(0, Math.min(100, combinedSoc)) + "%";
+        }
 
     }
 
+    // Combined capacity: simple sum of both packs
 
-    // Cell voltages grid
+    if (cap1 || cap2) {
+        setText("Capacity", cap1 + cap2);
+    }
 
-    updateCellVoltages(
-        prefix + "Cells",
-        battery.cellVoltages
-    );
+    // Combined current: sum of both packs (0.1 A units)
+
+    const cur1 = Number(b1.current);
+    const cur2 = Number(b2.current);
+
+    if (!isNaN(cur1) || !isNaN(cur2)) {
+
+        const totalCurrent =
+            (isNaN(cur1) ? 0 : cur1) + (isNaN(cur2) ? 0 : cur2);
+
+        setText(
+            "Current",
+            (totalCurrent / 10).toFixed(1) + " A"
+        );
+
+    }
 
 }
 
@@ -1030,145 +787,68 @@ async function updateDashboard() {
 
     try {
 
-        const response =
-            await fetch("/api/data?t=" + Date.now());
-
+        const response = await fetch("/api/data?t=" + Date.now());
 
         if (!response.ok) {
-
-            throw new Error(
-                "HTTP " + response.status
-            );
-
+            throw new Error("HTTP " + response.status);
         }
 
+        const result = await response.json();
 
-        const result =
-            await response.json();
-
-
-        console.log(
-            "Dashboard data:",
-            result
-        );
-
+        console.log("Dashboard data:", result);
 
         if (!result.data) {
-
             return;
-
         }
 
+        // T-Box info
 
-        // ---------------------------------------------
-        // T-Box
-        // ---------------------------------------------
+        setText("tboxId", result.tboxId);
+        setText("softwareVersion", result.data.sv);
 
-        setText(
-            "tboxId",
-            result.tboxId
-        );
-
-
-        setText(
-            "softwareVersion",
-            result.data.sv
-        );
-
-
-        const receivedTime =
-            Number(result.received_time || 0);
-
+        const receivedTime = Number(result.received_time || 0);
 
         if (receivedTime > 0) {
-
-            const date =
-                new Date(receivedTime * 1000);
-
-            setText(
-                "lastUpdate",
-                date.toLocaleString()
-            );
-
+            const date = new Date(receivedTime * 1000);
+            setText("lastUpdate", date.toLocaleString());
         }
 
-
-        // ---------------------------------------------
         // Connection status
-        // ---------------------------------------------
 
-        const age =
-            Date.now() / 1000 -
-            receivedTime;
-
-
-        const status =
-            document.getElementById(
-                "connectionStatus"
-            );
-
+        const age = Date.now() / 1000 - receivedTime;
+        const status = document.getElementById("connectionStatus");
 
         if (status) {
 
             if (receivedTime > 0 && age < 60) {
-
-                status.innerText =
-                    "Online";
-
-                status.classList.remove(
-                    "offline"
-                );
-
+                status.innerText = "Online";
+                status.classList.remove("offline");
             } else {
-
-                status.innerText =
-                    "Offline";
-
-                status.classList.add(
-                    "offline"
-                );
-
+                status.innerText = "Offline";
+                status.classList.add("offline");
             }
 
         }
 
-
-        // ---------------------------------------------
         // Batteries
-        // ---------------------------------------------
 
-        updateBattery(
-            "b1",
-            result.data.Battery1
-        );
+        updateBattery("b1", result.data.Battery1);
+        updateBattery("b2", result.data.Battery2);
 
+        // Combined pack
 
-        updateBattery(
-            "b2",
-            result.data.Battery2
-        );
+        updateCombined(result.data.Battery1, result.data.Battery2);
 
-
-        // ---------------------------------------------
         // GPS
-        // ---------------------------------------------
 
-        const mapBtn =
-            document.getElementById("mapBtn");
+        const mapBtn = document.getElementById("mapBtn");
 
         if (result.gps &&
             result.gps.Latitude !== undefined &&
             result.gps.Longitude !== undefined) {
 
-            setText(
-                "latitude",
-                result.gps.Latitude
-            );
-
-            setText(
-                "longitude",
-                result.gps.Longitude
-            );
+            setText("latitude", result.gps.Latitude);
+            setText("longitude", result.gps.Longitude);
 
             lastLat = result.gps.Latitude;
             lastLon = result.gps.Longitude;
@@ -1177,37 +857,19 @@ async function updateDashboard() {
                 mapBtn.disabled = false;
             }
 
-        } else {
-
-            if (mapBtn) {
-                mapBtn.disabled = true;
-            }
-
+        } else if (mapBtn) {
+            mapBtn.disabled = true;
         }
 
-    }
-
-    catch (error) {
-
-        console.error(
-            "Dashboard error:",
-            error
-        );
-
+    } catch (error) {
+        console.error("Dashboard error:", error);
     }
 
 }
 
 
-// Update immediately
 updateDashboard();
-
-
-// Update every 3 seconds
-setInterval(
-    updateDashboard,
-    3000
-);
+setInterval(updateDashboard, 3000);
 
 </script>
 
