@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Battary Dashboard</title>
+    <title>EC600 T-Box Dashboard</title>
 
     <style>
 
@@ -274,10 +274,10 @@
 
 <div class="header">
 
-    <h1>Battary Monitoring Dashboard</h1>
+    <h1>EC600 T-Box Dashboard</h1>
 
     <p>
-        Wellcome
+        STM32 → EC600 → HTTP → Web Dashboard
     </p>
 
 </div>
@@ -751,6 +751,18 @@
 
         </div>
 
+
+        <button id="mapBtn"
+                onclick="openInGoogleMaps()"
+                disabled
+                style="margin-top:16px;padding:12px 20px;
+                       border:none;border-radius:8px;
+                       background:#2563eb;color:white;
+                       font-size:15px;font-weight:bold;
+                       cursor:pointer;">
+            📍 View on Google Maps
+        </button>
+
     </div>
 
 </div>
@@ -758,6 +770,25 @@
 
 
 <script>
+
+let lastLat = null;
+let lastLon = null;
+
+
+function openInGoogleMaps() {
+
+    if (lastLat === null || lastLon === null) {
+        return;
+    }
+
+    const url =
+        "https://www.google.com/maps?q=" +
+        lastLat + "," + lastLon;
+
+    window.open(url, "_blank");
+
+}
+
 
 function valueOrDash(value) {
 
@@ -1105,7 +1136,9 @@ async function updateDashboard() {
         // GPS
         // ---------------------------------------------
 
-        if (result.gps) {
+        if (result.gps &&
+            result.gps.Latitude !== undefined &&
+            result.gps.Longitude !== undefined) {
 
             setText(
                 "latitude",
@@ -1116,6 +1149,16 @@ async function updateDashboard() {
                 "longitude",
                 result.gps.Longitude
             );
+
+            lastLat = result.gps.Latitude;
+            lastLon = result.gps.Longitude;
+
+            const btn =
+                document.getElementById("mapBtn");
+
+            if (btn) {
+                btn.disabled = false;
+            }
 
         }
 
