@@ -219,6 +219,27 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
 
+        .map-btn {
+            margin-top: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            background: #2563eb;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .map-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .map-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
         .status {
             display: inline-block;
             padding: 6px 12px;
@@ -751,6 +772,14 @@
 
         </div>
 
+
+        <button id="mapBtn"
+                class="map-btn"
+                onclick="openInGoogleMaps()"
+                disabled>
+            📍 View on Google Maps
+        </button>
+
     </div>
 
 </div>
@@ -758,6 +787,25 @@
 
 
 <script>
+
+let lastLat = null;
+let lastLon = null;
+
+
+function openInGoogleMaps() {
+
+    if (lastLat === null || lastLon === null) {
+        return;
+    }
+
+    const url =
+        "https://www.google.com/maps/search/?api=1&query=" +
+        lastLat + "," + lastLon;
+
+    window.open(url, "_blank");
+
+}
+
 
 function valueOrDash(value) {
 
@@ -1105,7 +1153,12 @@ async function updateDashboard() {
         // GPS
         // ---------------------------------------------
 
-        if (result.gps) {
+        const mapBtn =
+            document.getElementById("mapBtn");
+
+        if (result.gps &&
+            result.gps.Latitude !== undefined &&
+            result.gps.Longitude !== undefined) {
 
             setText(
                 "latitude",
@@ -1116,6 +1169,19 @@ async function updateDashboard() {
                 "longitude",
                 result.gps.Longitude
             );
+
+            lastLat = result.gps.Latitude;
+            lastLon = result.gps.Longitude;
+
+            if (mapBtn) {
+                mapBtn.disabled = false;
+            }
+
+        } else {
+
+            if (mapBtn) {
+                mapBtn.disabled = true;
+            }
 
         }
 
