@@ -55,22 +55,26 @@ async def receive_data(request: Request):
         print(body)
 
         # ----------------------------------------------------
-        # Expected format:
+        # ACTUAL format sent by the EC600 firmware:
         #
         # {
+        #     "sv": "3.0",
+        #     "Battery1": {...},
+        #     "Battery2": {...},
+        #     "IMEI": "...",
         #     "tboxId": "...",
-        #     "data": {
-        #         "sv": "3.0",
-        #         "Battery1": {...},
-        #         "Battery2": {...}
-        #     },
-        #     "gps": {...}
+        #     "server_time": 1759518796,
+        #     "gps": {...}        <- optional, not sent yet
         # }
+        #
+        # Everything is flat (no nested "data" key), so we
+        # store the whole body as "data" and just pull
+        # tboxId/gps back out for convenience.
         # ----------------------------------------------------
 
         latest_data = {
             "tboxId": body.get("tboxId", ""),
-            "data": body.get("data", {}),
+            "data": body,
             "gps": body.get("gps", {}),
             "received_time": time.time()
         }
