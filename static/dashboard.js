@@ -2,121 +2,426 @@ async function loadDevices() {
 
     try {
 
-        const response =
-            await fetch("/api/devices");
+        const response = await fetch("/api/devices");
 
-        const devices =
-            await response.json();
+        const devices = await response.json();
 
-        const container =
-            document.getElementById("deviceList");
+        const dashboard = document.getElementById("dashboard");
 
-        container.innerHTML = "";
+        dashboard.innerHTML = "";
 
-        const deviceIds =
-            Object.keys(devices);
+        const deviceIds = Object.keys(devices);
 
         if (deviceIds.length === 0) {
 
-            container.innerHTML =
+            dashboard.innerHTML =
                 "<p>No T-Box data received yet.</p>";
 
             return;
         }
 
-        deviceIds.forEach(function(id) {
+        deviceIds.forEach(function (tboxId) {
 
-            const d = devices[id];
+            const data = devices[tboxId];
 
-            const card =
-                document.createElement("div");
+            createTboxCard(
+                dashboard,
+                tboxId,
+                data
+            );
 
-            card.className = "device";
-
-            card.innerHTML = `
-
-                <div class="device-title">
-                    T-Box: ${d.tboxId || id}
-                </div>
-
-                <div class="data-grid">
-
-                    <div class="data-item">
-                        <div class="label">
-                            Battery Voltage
-                        </div>
-                        <div class="value">
-                            ${d.BatVoltage ?? "-"} V
-                        </div>
-                    </div>
-
-                    <div class="data-item">
-                        <div class="label">
-                            Battery Current
-                        </div>
-                        <div class="value">
-                            ${d.BatCurrent ?? "-"} A
-                        </div>
-                    </div>
-
-                    <div class="data-item">
-                        <div class="label">
-                            SOC
-                        </div>
-                        <div class="value">
-                            ${d.SOC ?? "-"} %
-                        </div>
-                    </div>
-
-                    <div class="data-item">
-                        <div class="label">
-                            SOH
-                        </div>
-                        <div class="value">
-                            ${d.SOH ?? "-"} %
-                        </div>
-                    </div>
-
-                    <div class="data-item">
-                        <div class="label">
-                            Motor RPM
-                        </div>
-                        <div class="value">
-                            ${d.MotorRPM ?? "-"}
-                        </div>
-                    </div>
-
-                    <div class="data-item">
-                        <div class="label">
-                            State
-                        </div>
-                        <div class="value">
-                            ${d.state ?? "-"}
-                        </div>
-                    </div>
-
-                    <div class="data-item">
-                        <div class="label">
-                            Distance
-                        </div>
-                        <div class="value">
-                            ${d.total_distance_km ?? "-"} km
-                        </div>
-                    </div>
-
-                </div>
-            `;
-
-            container.appendChild(card);
         });
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Dashboard error:",
+            error
+        );
 
     }
 }
 
+
+function createTboxCard(
+    dashboard,
+    tboxId,
+    data
+) {
+
+    const battery1 = data.Battery1 || {};
+    const battery2 = data.Battery2 || {};
+
+    const card =
+        document.createElement("div");
+
+    card.className = "tbox-card";
+
+
+    // --------------------------------------------------
+    // T-BOX HEADER
+    // --------------------------------------------------
+
+    const title =
+        document.createElement("h2");
+
+    title.innerText =
+        "T-Box: " + tboxId;
+
+    card.appendChild(title);
+
+
+    const version =
+        document.createElement("p");
+
+    version.innerText =
+        "Software Version: " +
+        (data.sv || "-");
+
+    card.appendChild(version);
+
+
+    // --------------------------------------------------
+    // BATTERY 1
+    // --------------------------------------------------
+
+    card.appendChild(
+        createBatterySection(
+            "Battery 1",
+            battery1
+        )
+    );
+
+
+    // --------------------------------------------------
+    // BATTERY 2
+    // --------------------------------------------------
+
+    card.appendChild(
+        createBatterySection(
+            "Battery 2",
+            battery2
+        )
+    );
+
+
+    // --------------------------------------------------
+    // GPS
+    // --------------------------------------------------
+
+    if (
+        data.Latitude !== undefined ||
+        data.Longitude !== undefined
+    ) {
+
+        const gps =
+            document.createElement("div");
+
+        gps.className =
+            "info-section";
+
+        gps.innerHTML = `
+            <h3>GPS</h3>
+
+            <div class="info-grid">
+
+                <div>
+                    <span>Latitude</span>
+                    <strong>${data.Latitude ?? "-"}</strong>
+                </div>
+
+                <div>
+                    <span>Longitude</span>
+                    <strong>${data.Longitude ?? "-"}</strong>
+                </div>
+
+            </div>
+        `;
+
+        card.appendChild(gps);
+    }
+
+
+    // --------------------------------------------------
+    // SERVER TIME
+    // --------------------------------------------------
+
+    if (data._server_time) {
+
+        const serverTime =
+            document.createElement("p");
+
+        serverTime.className =
+            "server-time";
+
+        serverTime.innerText =
+            "Server received: " +
+            data._server_time;
+
+        card.appendChild(serverTime);
+    }
+
+
+    dashboard.appendChild(card);
+}
+
+
+function createBatterySection(
+    name,
+    battery
+) {
+
+    const section =
+        document.createElement("div");
+
+    section.className =
+        "battery-section";
+
+
+    const title =
+        document.createElement("h3");
+
+    title.innerText = name;
+
+    section.appendChild(title);
+
+
+    // --------------------------------------------------
+    // CONVERT VOLTAGE
+    // --------------------------------------------------
+
+    let voltage = "-";
+
+    if (
+        battery.voltage !== undefined &&
+        battery.voltage !== null
+    ) {
+
+        voltage =
+            (
+                Number(battery.voltage) / 100
+            ).toFixed(2) + " V";
+    }
+
+
+    // --------------------------------------------------
+    // CURRENT
+    // --------------------------------------------------
+
+    let current = "-";
+
+    if (
+        battery.current !== undefined &&
+        battery.current !== null
+    ) {
+
+        current =
+            battery.current + " A";
+    }
+
+
+    // --------------------------------------------------
+    // TEMPERATURE
+    // --------------------------------------------------
+
+    let temperature = "-";
+
+    if (
+        battery.temperature !== undefined &&
+        battery.temperature !== null
+    ) {
+
+        temperature =
+            battery.temperature + " °C";
+    }
+
+
+    // --------------------------------------------------
+    // SOC
+    // --------------------------------------------------
+
+    let soc = "-";
+
+    if (
+        battery.soc !== undefined &&
+        battery.soc !== null
+    ) {
+
+        soc =
+            battery.soc + " %";
+    }
+
+
+    // --------------------------------------------------
+    // SOH
+    // --------------------------------------------------
+
+    let soh = "-";
+
+    if (
+        battery.soh !== undefined &&
+        battery.soh !== null
+    ) {
+
+        soh =
+            battery.soh + " %";
+    }
+
+
+    // --------------------------------------------------
+    // CELL DIFFERENCE
+    // --------------------------------------------------
+
+    let cellDiff = "-";
+
+    if (
+        battery.cellDiff !== undefined &&
+        battery.cellDiff !== null
+    ) {
+
+        cellDiff =
+            battery.cellDiff + " mV";
+    }
+
+
+    // --------------------------------------------------
+    // CYCLE COUNT
+    // --------------------------------------------------
+
+    let cycleCount = "-";
+
+    if (
+        battery.cycleCount !== undefined &&
+        battery.cycleCount !== null
+    ) {
+
+        cycleCount =
+            battery.cycleCount;
+    }
+
+
+    // --------------------------------------------------
+    // INFORMATION GRID
+    // --------------------------------------------------
+
+    section.innerHTML += `
+
+        <div class="info-grid">
+
+            <div>
+                <span>BMS ID</span>
+                <strong>${battery.bmsId || "-"}</strong>
+            </div>
+
+            <div>
+                <span>Voltage</span>
+                <strong>${voltage}</strong>
+            </div>
+
+            <div>
+                <span>Current</span>
+                <strong>${current}</strong>
+            </div>
+
+            <div>
+                <span>SOC</span>
+                <strong>${soc}</strong>
+            </div>
+
+            <div>
+                <span>SOH</span>
+                <strong>${soh}</strong>
+            </div>
+
+            <div>
+                <span>Temperature</span>
+                <strong>${temperature}</strong>
+            </div>
+
+            <div>
+                <span>Cell Difference</span>
+                <strong>${cellDiff}</strong>
+            </div>
+
+            <div>
+                <span>Cycle Count</span>
+                <strong>${cycleCount}</strong>
+            </div>
+
+            <div>
+                <span>Errors</span>
+                <strong>${battery.errors || "-"}</strong>
+            </div>
+
+        </div>
+
+    `;
+
+
+    // --------------------------------------------------
+    // CELL VOLTAGES
+    // --------------------------------------------------
+
+    if (
+        Array.isArray(battery.cellVoltages) &&
+        battery.cellVoltages.length > 0
+    ) {
+
+        const cellTitle =
+            document.createElement("h4");
+
+        cellTitle.innerText =
+            "Cell Voltages";
+
+        section.appendChild(cellTitle);
+
+
+        const cells =
+            document.createElement("div");
+
+        cells.className =
+            "cell-grid";
+
+
+        battery.cellVoltages.forEach(
+            function (cellVoltage, index) {
+
+                const cell =
+                    document.createElement("div");
+
+                cell.className =
+                    "cell";
+
+                const voltage =
+                    (
+                        Number(cellVoltage) / 1000
+                    ).toFixed(3);
+
+                cell.innerHTML = `
+                    <span>Cell ${index + 1}</span>
+                    <strong>${voltage} V</strong>
+                `;
+
+                cells.appendChild(cell);
+            }
+        );
+
+
+        section.appendChild(cells);
+    }
+
+
+    return section;
+}
+
+
+// --------------------------------------------------
+// REFRESH EVERY 3 SECONDS
+// --------------------------------------------------
+
 loadDevices();
 
-setInterval(loadDevices, 5000);
+setInterval(
+    loadDevices,
+    3000
+);
