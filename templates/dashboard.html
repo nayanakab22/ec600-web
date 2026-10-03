@@ -746,7 +746,7 @@ function updateCombined(battery1, battery2) {
 
     if (combinedSoc !== null) {
 
-        setText("SOC", combinedSoc.toFixed(1) + " %");
+        setText("combinedSoc", combinedSoc.toFixed(1) + " %");
 
         const bar = document.getElementById("combinedSocBar");
 
@@ -760,7 +760,7 @@ function updateCombined(battery1, battery2) {
     // Combined capacity: simple sum of both packs
 
     if (cap1 || cap2) {
-        setText("Capacity", cap1 + cap2);
+        setText("combinedCapacity", cap1 + cap2);
     }
 
     // Combined current: sum of both packs (0.1 A units)
@@ -774,7 +774,7 @@ function updateCombined(battery1, battery2) {
             (isNaN(cur1) ? 0 : cur1) + (isNaN(cur2) ? 0 : cur2);
 
         setText(
-            "Current",
+            "combinedCurrent",
             (totalCurrent / 10).toFixed(1) + " A"
         );
 
