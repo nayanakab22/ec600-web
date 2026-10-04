@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title> Dashboard</title>
+    <title>Battary Monitoring Dashboard</title>
 
     <style>
 
@@ -147,16 +147,52 @@
             color: #c2410c;
         }
 
-        /* ===== Cell voltages ===== */
+        /* ===== Cell voltages (collapsible) ===== */
 
         .cell-section {
             margin-top: 18px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 14px;
         }
 
-        .cell-section h4 {
-            margin: 0 0 10px;
+        .cell-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            background: none;
+            border: none;
+            width: 100%;
+            padding: 0;
+            font: inherit;
+        }
+
+        .cell-toggle h4 {
+            margin: 0;
             font-size: 15px;
             color: #334155;
+        }
+
+        .cell-toggle .chevron {
+            color: #94a3b8;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .cell-toggle.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .cell-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+        }
+
+        .cell-body.open {
+            max-height: 600px;
+            margin-top: 12px;
         }
 
         .cell-grid {
@@ -334,10 +370,10 @@
 
 <div class="header">
 
-    <h1 id="dashboardTitle"> Dashboard</h1>
+    <h1 id="dashboardTitle">Battary Monitoring Dashboard</h1>
 
     <p>
-        Wellcom
+       Wellcome
     </p>
 
 </div>
@@ -355,7 +391,7 @@
         <div class="top-info">
 
             <div class="info-item">
-                <div class="info-label">Box</div>
+                <div class="info-label">EMU</div>
                 <div class="info-value" id="tboxId">-</div>
             </div>
 
@@ -393,7 +429,7 @@
         <div class="data-grid">
 
             <div class="data-box soc-box">
-                <div class="data-label"> SOC</div>
+                <div class="data-label">SOC</div>
                 <div class="data-value" id="combinedSoc">- %</div>
                 <div class="soc-bar">
                     <div class="soc-fill" id="combinedSocBar"></div>
@@ -401,7 +437,7 @@
             </div>
 
             <div class="data-box">
-                <div class="data-label"> Capacity</div>
+                <div class="data-label">Capacity</div>
                 <div class="data-value" id="combinedCapacity">-</div>
             </div>
 
@@ -486,8 +522,17 @@
             </div>
 
             <div class="cell-section">
-                <h4>Cell Voltages</h4>
-                <div class="cell-grid" id="b1Cells"></div>
+
+                <button class="cell-toggle" id="b1Toggle"
+                        onclick="toggleCells('b1')">
+                    <h4>Cell Voltages</h4>
+                    <span class="chevron">▼</span>
+                </button>
+
+                <div class="cell-body" id="b1Body">
+                    <div class="cell-grid" id="b1Cells"></div>
+                </div>
+
             </div>
 
         </div>
@@ -557,8 +602,17 @@
             </div>
 
             <div class="cell-section">
-                <h4>Cell Voltages</h4>
-                <div class="cell-grid" id="b2Cells"></div>
+
+                <button class="cell-toggle" id="b2Toggle"
+                        onclick="toggleCells('b2')">
+                    <h4>Cell Voltages</h4>
+                    <span class="chevron">▼</span>
+                </button>
+
+                <div class="cell-body" id="b2Body">
+                    <div class="cell-grid" id="b2Cells"></div>
+                </div>
+
             </div>
 
         </div>
@@ -722,6 +776,21 @@ function setText(id, value) {
     if (element) {
         element.innerText = valueOrDash(value);
     }
+
+}
+
+
+function toggleCells(prefix) {
+
+    const body = document.getElementById(prefix + "Body");
+    const toggle = document.getElementById(prefix + "Toggle");
+
+    if (!body || !toggle) {
+        return;
+    }
+
+    body.classList.toggle("open");
+    toggle.classList.toggle("open");
 
 }
 
