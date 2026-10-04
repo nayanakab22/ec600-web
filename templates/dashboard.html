@@ -2,15 +2,27 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Battary Monitoring Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Cluster Dashboard</title>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        :root {
+            --bg-cockpit: #05070b;
+            --panel-bg: rgba(13, 19, 33, 0.7);
+            --panel-border: rgba(56, 189, 248, 0.15);
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --neon-blue: #38bdf8;
+            --neon-cyan: #22d3ee;
+            --neon-green: #34d399;
+            --neon-amber: #fbbf24;
+            --neon-red: #f87171;
+        }
 
         * {
             box-sizing: border-box;
@@ -18,926 +30,803 @@
 
         body {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f3f4f6;
-            color: #222;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-cockpit);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .header {
-            background: #111827;
-            color: white;
-            padding: 20px 30px;
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.08), transparent 60%);
+            z-index: -1;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
-
-        .header p {
-            margin: 6px 0 0;
-            color: #cbd5e1;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 25px auto;
-            padding: 0 20px;
-        }
-
-        .top-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .top-info {
+        /* ===== Cockpit Header Bar ===== */
+        .dash-header {
             display: flex;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
+            align-items: center;
+            padding: 16px 28px;
+            background: rgba(13, 19, 33, 0.9);
+            border-bottom: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px);
         }
 
-        .info-item {
-            min-width: 200px;
+        .dash-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .info-label {
-            color: #64748b;
+        .dash-title i {
+            color: var(--neon-blue);
+        }
+
+        .telemetry-meta {
+            display: flex;
+            gap: 24px;
             font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
         }
 
-        .info-value {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 4px;
+        .meta-item span {
+            color: var(--text-main);
+            font-weight: 700;
         }
 
-        .battery-grid {
+        .connection-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--neon-green);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .connection-pill.offline {
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--neon-red);
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        /* ===== Main Layout Grid (Automotive Cluster) ===== */
+        .cockpit-grid {
+            max-width: 1500px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 1100px) {
+            .cockpit-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== Master EV HUD Column (Combined Pack Centerpiece) ===== */
+        .hud-master {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .hud-master::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+        }
+
+        .hud-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Large Central Range & SOC Gauge Styling */
+        .central-gauge-container {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+
+        .range-massive {
+            font-size: 64px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+            line-height: 1;
+            text-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        }
+
+        .range-massive span {
+            font-size: 20px;
+            color: var(--neon-blue);
+            font-weight: 600;
+        }
+
+        .range-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 6px;
+        }
+
+        /* EV Gauge Readouts */
+        .ev-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .ev-metric-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .ev-metric-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .ev-metric-val {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+        }
+
+        .master-soc-wrap {
+            margin-top: 16px;
+        }
+
+        .soc-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .cluster-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cluster-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+
+        /* ===== Individual Packs Column (Battery 1 & 2 Dual Panels) ===== */
+        .packs-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        .battery-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        @media(max-width: 800px) {
+            .packs-container {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .battery-title {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 18px;
-            border-bottom: 1px solid #e5e7eb;
+        .pack-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             padding-bottom: 12px;
+            margin-bottom: 16px;
         }
 
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .data-box {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 14px;
-        }
-
-        .data-label {
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 6px;
-        }
-
-        .data-value {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .soc-box {
-            grid-column: span 2;
-        }
-
-        .soc-bar {
-            height: 12px;
-            width: 100%;
-            background: #e5e7eb;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .soc-fill {
-            height: 100%;
-            width: 0%;
-            background: #22c55e;
-            transition: width 0.5s;
-        }
-
-        .errors {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            background: #fff7ed;
-            color: #c2410c;
-        }
-
-        /* ===== Cell voltages (collapsible) ===== */
-
-        .cell-section {
-            margin-top: 18px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 14px;
-        }
-
-        .cell-toggle {
+        .pack-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            user-select: none;
-            background: none;
-            border: none;
-            width: 100%;
-            padding: 0;
-            font: inherit;
-        }
-
-        .cell-toggle h4 {
-            margin: 0;
-            font-size: 15px;
-            color: #334155;
-        }
-
-        .cell-toggle .chevron {
-            color: #94a3b8;
-            font-size: 14px;
-            transition: transform 0.2s;
-        }
-
-        .cell-toggle.open .chevron {
-            transform: rotate(180deg);
-        }
-
-        .cell-body {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.25s ease;
-        }
-
-        .cell-body.open {
-            max-height: 600px;
-            margin-top: 12px;
-        }
-
-        .cell-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
             gap: 8px;
         }
 
-        .cell {
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
+        .pack-id {
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-blue);
+            background: rgba(56, 189, 248, 0.1);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Parameter Telemetry Grids */
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .param-cell {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .param-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .param-val {
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+        }
+
+        /* Error and Warning Bar */
+        .alert-bar {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: var(--neon-amber);
             border-radius: 8px;
-            padding: 8px 6px;
+            padding: 10px 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Cell Voltages Accordion Drawer */
+        .cells-accordion {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 12px;
+        }
+
+        .cells-trigger {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .cells-trigger:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .cells-trigger .chevron {
+            color: var(--text-muted);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cells-trigger.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .cells-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cells-dropdown.open {
+            max-height: 350px;
+            margin-top: 12px;
+            overflow-y: auto;
+        }
+
+        .cells-matrix {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .cell-unit {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 6px 4px;
             text-align: center;
         }
 
-        .cell .cell-num {
+        .cell-unit .num {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .cell-unit .volts {
             font-size: 11px;
-            color: #94a3b8;
-        }
-
-        .cell .cell-v {
-            font-size: 14px;
-            font-weight: bold;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
             margin-top: 2px;
+            color: #fff;
         }
 
-        .cell.max {
-            background: #fee2e2;
-            border-color: #fca5a5;
+        .cell-unit.max {
+            background: rgba(248, 113, 113, 0.15);
+            border-color: rgba(248, 113, 113, 0.4);
         }
+        .cell-unit.max .volts { color: var(--neon-red); }
 
-        .cell.max .cell-v {
-            color: #b91c1c;
+        .cell-unit.min {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.4);
         }
+        .cell-unit.min .volts { color: var(--neon-blue); }
 
-        .cell.min {
-            background: #dbeafe;
-            border-color: #93c5fd;
-        }
 
-        .cell.min .cell-v {
-            color: #1d4ed8;
-        }
-
-        .gps-card {
-            margin-top: 20px;
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .map-btn {
-            margin-top: 16px;
-            padding: 12px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            color: white;
-            background: #2563eb;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .map-btn:hover {
-            background: #1d4ed8;
-        }
-
-        .map-btn:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-        }
-
-        /* ===== GPS popup modal ===== */
-
-        .header h1 {
-            cursor: pointer;
-            user-select: none;
-        }
-
+        /* ===== GPS Modal (Cockpit Overlay) ===== */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .modal-overlay.show {
             display: flex;
+            opacity: 1;
         }
 
-        .modal-box {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 420px;
+        .modal-cockpit {
+            background: #0d1321;
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 400px;
             width: 100%;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
 
         .modal-close {
             position: absolute;
-            top: 14px;
-            right: 16px;
-            background: none;
+            top: 16px; right: 16px;
+            background: rgba(255,255,255,0.05);
             border: none;
-            font-size: 22px;
-            line-height: 1;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
             cursor: pointer;
-            color: #64748b;
         }
 
         .modal-close:hover {
-            color: #111827;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
         }
 
-        .status {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            background: #dcfce7;
-            color: #166534;
-            font-size: 13px;
+        .map-trigger-btn {
+            margin-top: 20px;
+            width: 100%;
+            background: var(--neon-blue);
+            color: #030712;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
         }
 
-        .offline {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        @media(max-width: 900px) {
-
-            .battery-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .data-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .cell-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-
-        }
-
-        @media(max-width: 500px) {
-
-            .data-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .soc-box {
-                grid-column: span 1;
-            }
-
-            .cell-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-        }
-
+        .map-trigger-btn:hover { background: #7dd3fc; }
+        .map-trigger-btn:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
     </style>
-
 </head>
-
 
 <body>
 
-<div class="header">
-
-    <h1 id="dashboardTitle">Battary Monitoring Dashboard</h1>
-
-    <p>
-       Wellcome
-    </p>
-
+<!-- Cockpit Header -->
+<div class="dash-header">
+    <h1 class="dash-title" id="dashboardTitle">
+        <i class="fa-solid fa-gauge-high"></i> E-BIKE TELEMETRY HUD
+    </h1>
+    <div class="telemetry-meta">
+        <div class="meta-item">EMU: <span id="tboxId">-</span></div>
+        <div class="meta-item">VER: <span id="softwareVersion">-</span></div>
+        <div class="meta-item">SYNC: <span id="lastUpdate">-</span></div>
+        <div>
+            <span id="connectionStatus" class="connection-pill offline">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Standby
+            </span>
+        </div>
+    </div>
 </div>
 
+<!-- Cockpit Cluster Layout -->
+<div class="cockpit-grid">
 
-<div class="container">
-
-
-    <!-- =====================================================
-         TBOX INFORMATION
-         ===================================================== -->
-
-    <div class="top-card">
-
-        <div class="top-info">
-
-            <div class="info-item">
-                <div class="info-label">EMU</div>
-                <div class="info-value" id="tboxId">-</div>
+    <!-- MASTER HUD (Combined Pack & Range Focus) -->
+    <div class="hud-master">
+        <div>
+            <div class="hud-title"><i class="fa-solid fa-bolt-lightning"></i> Combined Master Pack</div>
+            
+            <div class="central-gauge-container">
+                <div class="range-massive" id="combinedRange">--<span>km</span></div>
+                <div class="range-label">Estimated Range Remaining</div>
             </div>
 
-            <div class="info-item">
-                <div class="info-label">Software Version</div>
-                <div class="info-value" id="softwareVersion">-</div>
+            <div class="ev-metrics-grid">
+                <div class="ev-metric-box">
+                    <div class="ev-metric-label">Total Capacity</div>
+                    <div class="ev-metric-val" id="combinedCapacity">-</div>
+                </div>
+                <div class="ev-metric-box">
+                    <div class="ev-metric-label">Net Current</div>
+                    <div class="ev-metric-val" id="combinedCurrent">- A</div>
+                </div>
             </div>
-
-            <div class="info-item">
-                <div class="info-label">Last Update</div>
-                <div class="info-value" id="lastUpdate">-</div>
-            </div>
-
-            <div class="info-item">
-                <span id="connectionStatus" class="status offline">
-                    Waiting for data
-                </span>
-            </div>
-
         </div>
 
+        <div class="master-soc-wrap">
+            <div class="soc-info-row">
+                <span>PACK STATE OF CHARGE</span>
+                <span id="combinedSoc" style="font-family:'JetBrains Mono', monospace;">- %</span>
+            </div>
+            <div class="cluster-bar">
+                <div class="cluster-fill" id="combinedSocBar"></div>
+            </div>
+        </div>
     </div>
 
+    <!-- DUAL INDIVIDUAL BATTERY PANELS -->
+    <div class="packs-container">
 
-    <!-- =====================================================
-         COMBINED PACK (Battery 1 + Battery 2)
-         ===================================================== -->
-
-    <div class="top-card">
-
-        <div class="battery-title" style="margin-bottom:14px;">
-            Pack
-        </div>
-
-        <div class="data-grid">
-
-            <div class="data-box soc-box">
-                <div class="data-label">SOC</div>
-                <div class="data-value" id="combinedSoc">- %</div>
-                <div class="soc-bar">
-                    <div class="soc-fill" id="combinedSocBar"></div>
-                </div>
-            </div>
-
-            <div class="data-box">
-                <div class="data-label">Capacity</div>
-                <div class="data-value" id="combinedCapacity">-</div>
-            </div>
-
-            <div class="data-box">
-                <div class="data-label">Current</div>
-                <div class="data-value" id="combinedCurrent">- A</div>
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         BATTERIES
-         ===================================================== -->
-
-    <div class="battery-grid">
-
-
-        <!-- ================= BATTERY 1 ================= -->
-
-        <div class="battery-card">
-
-            <div class="battery-title">Battery 1</div>
-
-            <div class="data-grid">
-
-                <div class="data-box">
-                    <div class="data-label">BMS ID</div>
-                    <div class="data-value" id="b1Id">-</div>
+        <!-- BATTERY 1 -->
+        <div class="pack-panel">
+            <div>
+                <div class="pack-header">
+                    <div class="pack-name"><i class="fa-solid fa-battery-half"></i> Battery 1</div>
+                    <div class="pack-id" id="b1Id">-</div>
                 </div>
 
-                <div class="data-box">
-                    <div class="data-label">Voltage</div>
-                    <div class="data-value" id="b1Voltage">- V</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Current</div>
-                    <div class="data-value" id="b1Current">- A</div>
-                </div>
-
-                <div class="data-box soc-box">
-                    <div class="data-label">SOC</div>
-                    <div class="data-value" id="b1Soc">- %</div>
-                    <div class="soc-bar">
-                        <div class="soc-fill" id="b1SocBar"></div>
+                <div class="params-grid">
+                    <div class="param-cell">
+                        <div class="param-title">Voltage</div>
+                        <div class="param-val" id="b1Voltage">- V</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Current</div>
+                        <div class="param-val" id="b1Current">- A</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">SOC</div>
+                        <div class="param-val" id="b1Soc">- %</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">SOH</div>
+                        <div class="param-val" id="b1Soh">- %</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Temp</div>
+                        <div class="param-val" id="b1Temperature">- °C</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Capacity</div>
+                        <div class="param-val" id="b1Capacity">-</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Cycles</div>
+                        <div class="param-val" id="b1Cycle">-</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Cell Diff</div>
+                        <div class="param-val" id="b1CellDiff">-</div>
                     </div>
                 </div>
 
-                <div class="data-box">
-                    <div class="data-label">SOH</div>
-                    <div class="data-value" id="b1Soh">- %</div>
+                <div class="alert-bar">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Errors: <span id="b1Errors">-</span></span>
                 </div>
-
-                <div class="data-box">
-                    <div class="data-label">Temperature</div>
-                    <div class="data-value" id="b1Temperature">- °C</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Capacity</div>
-                    <div class="data-value" id="b1Capacity">-</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Cycle Count</div>
-                    <div class="data-value" id="b1Cycle">-</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Cell Difference</div>
-                    <div class="data-value" id="b1CellDiff">-</div>
-                </div>
-
             </div>
 
-            <div class="errors">
-                <b>Errors:</b>
-                <span id="b1Errors">-</span>
-            </div>
-
-            <div class="cell-section">
-
-                <button class="cell-toggle" id="b1Toggle"
-                        onclick="toggleCells('b1')">
-                    <h4>Cell Voltages</h4>
-                    <span class="chevron">▼</span>
+            <div class="cells-accordion">
+                <button class="cells-trigger" id="b1Toggle" onclick="toggleCells('b1')">
+                    <span>Cell Voltages Breakdown</span>
+                    <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
-
-                <div class="cell-body" id="b1Body">
-                    <div class="cell-grid" id="b1Cells"></div>
+                <div class="cells-dropdown" id="b1Body">
+                    <div class="cells-matrix" id="b1Cells"></div>
                 </div>
-
             </div>
-
         </div>
 
-
-        <!-- ================= BATTERY 2 ================= -->
-
-        <div class="battery-card">
-
-            <div class="battery-title">Battery 2</div>
-
-            <div class="data-grid">
-
-                <div class="data-box">
-                    <div class="data-label">BMS ID</div>
-                    <div class="data-value" id="b2Id">-</div>
+        <!-- BATTERY 2 -->
+        <div class="pack-panel">
+            <div>
+                <div class="pack-header">
+                    <div class="pack-name"><i class="fa-solid fa-battery-half"></i> Battery 2</div>
+                    <div class="pack-id" id="b2Id">-</div>
                 </div>
 
-                <div class="data-box">
-                    <div class="data-label">Voltage</div>
-                    <div class="data-value" id="b2Voltage">- V</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Current</div>
-                    <div class="data-value" id="b2Current">- A</div>
-                </div>
-
-                <div class="data-box soc-box">
-                    <div class="data-label">SOC</div>
-                    <div class="data-value" id="b2Soc">- %</div>
-                    <div class="soc-bar">
-                        <div class="soc-fill" id="b2SocBar"></div>
+                <div class="params-grid">
+                    <div class="param-cell">
+                        <div class="param-title">Voltage</div>
+                        <div class="param-val" id="b2Voltage">- V</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Current</div>
+                        <div class="param-val" id="b2Current">- A</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">SOC</div>
+                        <div class="param-val" id="b2Soc">- %</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">SOH</div>
+                        <div class="param-val" id="b2Soh">- %</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Temp</div>
+                        <div class="param-val" id="b2Temperature">- °C</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Capacity</div>
+                        <div class="param-val" id="b2Capacity">-</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Cycles</div>
+                        <div class="param-val" id="b2Cycle">-</div>
+                    </div>
+                    <div class="param-cell">
+                        <div class="param-title">Cell Diff</div>
+                        <div class="param-val" id="b2CellDiff">-</div>
                     </div>
                 </div>
 
-                <div class="data-box">
-                    <div class="data-label">SOH</div>
-                    <div class="data-value" id="b2Soh">- %</div>
+                <div class="alert-bar">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Errors: <span id="b2Errors">-</span></span>
                 </div>
-
-                <div class="data-box">
-                    <div class="data-label">Temperature</div>
-                    <div class="data-value" id="b2Temperature">- °C</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Capacity</div>
-                    <div class="data-value" id="b2Capacity">-</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Cycle Count</div>
-                    <div class="data-value" id="b2Cycle">-</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Cell Difference</div>
-                    <div class="data-value" id="b2CellDiff">-</div>
-                </div>
-
             </div>
 
-            <div class="errors">
-                <b>Errors:</b>
-                <span id="b2Errors">-</span>
-            </div>
-
-            <div class="cell-section">
-
-                <button class="cell-toggle" id="b2Toggle"
-                        onclick="toggleCells('b2')">
-                    <h4>Cell Voltages</h4>
-                    <span class="chevron">▼</span>
+            <div class="cells-accordion">
+                <button class="cells-trigger" id="b2Toggle" onclick="toggleCells('b2')">
+                    <span>Cell Voltages Breakdown</span>
+                    <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
-
-                <div class="cell-body" id="b2Body">
-                    <div class="cell-grid" id="b2Cells"></div>
+                <div class="cells-dropdown" id="b2Body">
+                    <div class="cells-matrix" id="b2Cells"></div>
                 </div>
-
             </div>
-
         </div>
 
     </div>
 
-
 </div>
 
-
-<!-- =====================================================
-     GPS POPUP (hidden until the title is clicked 5x)
-     ===================================================== -->
-
+<!-- GPS Modal Popup (Triggered by clicking title 5x) -->
 <div class="modal-overlay" id="gpsModal">
-
-    <div class="modal-box">
-
-        <button class="modal-close" onclick="closeGpsModal()">
-            &times;
-        </button>
-
-        <div class="gps-card" style="margin-top:0;box-shadow:none;padding:0;">
-
-            <h2>GPS</h2>
-
-            <div class="data-grid">
-
-                <div class="data-box">
-                    <div class="data-label">Latitude</div>
-                    <div class="data-value" id="latitude">-</div>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-label">Longitude</div>
-                    <div class="data-value" id="longitude">-</div>
-                </div>
-
+    <div class="modal-cockpit">
+        <button class="modal-close" onclick="closeGpsModal()"><i class="fa-solid fa-xmark"></i></button>
+        <h3 style="margin-top: 0; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-location-crosshairs" style="color:var(--neon-blue);"></i> Telemetry GPS Fix
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+            <div class="param-cell">
+                <div class="param-title">Latitude</div>
+                <div class="param-val" id="latitude" style="font-size: 14px;">-</div>
             </div>
-
-            <button id="mapBtn"
-                    class="map-btn"
-                    onclick="openInGoogleMaps()"
-                    disabled>
-                📍 View on Google Maps
-            </button>
-
+            <div class="param-cell">
+                <div class="param-title">Longitude</div>
+                <div class="param-val" id="longitude" style="font-size: 14px;">-</div>
+            </div>
         </div>
 
+        <button id="mapBtn" class="map-trigger-btn" onclick="openInGoogleMaps()" disabled>
+            <i class="fa-solid fa-map-location-dot"></i> Open in Google Maps
+        </button>
     </div>
-
 </div>
-
 
 <script>
-
 let lastLat = null;
 let lastLon = null;
 
-
-// ---------------------------------------------------------
-// Secret GPS popup: click the title 5 times within 3
-// seconds to reveal it.
-// ---------------------------------------------------------
-
+// Secret GPS trigger: click the header title 5 times within 3 seconds
 let titleClickCount = 0;
 let titleClickTimer = null;
-
 const TITLE_CLICKS_NEEDED = 5;
 const TITLE_CLICK_WINDOW_MS = 3000;
 
-
 function handleTitleClick() {
-
     titleClickCount += 1;
-
-    if (titleClickTimer) {
-        clearTimeout(titleClickTimer);
-    }
-
-    titleClickTimer = setTimeout(function () {
-        titleClickCount = 0;
-    }, TITLE_CLICK_WINDOW_MS);
+    if (titleClickTimer) clearTimeout(titleClickTimer);
+    titleClickTimer = setTimeout(() => { titleClickCount = 0; }, TITLE_CLICK_WINDOW_MS);
 
     if (titleClickCount >= TITLE_CLICKS_NEEDED) {
         titleClickCount = 0;
         clearTimeout(titleClickTimer);
         openGpsModal();
     }
-
 }
-
 
 function openGpsModal() {
-
     const modal = document.getElementById("gpsModal");
-
-    if (modal) {
-        modal.classList.add("show");
-    }
-
+    if (modal) modal.classList.add("show");
 }
-
 
 function closeGpsModal() {
-
     const modal = document.getElementById("gpsModal");
-
-    if (modal) {
-        modal.classList.remove("show");
-    }
-
+    if (modal) modal.classList.remove("show");
 }
 
-
-document.getElementById("dashboardTitle")
-    .addEventListener("click", handleTitleClick);
-
-
-// close the popup if the dark overlay itself is clicked
-document.getElementById("gpsModal")
-    .addEventListener("click", function (e) {
-
-        if (e.target.id === "gpsModal") {
-            closeGpsModal();
-        }
-
-    });
-
+document.getElementById("dashboardTitle").addEventListener("click", handleTitleClick);
+document.getElementById("gpsModal").addEventListener("click", (e) => {
+    if (e.target.id === "gpsModal") closeGpsModal();
+});
 
 function openInGoogleMaps() {
-
-    if (lastLat === null || lastLon === null) {
-        return;
-    }
-
-    const url =
-        "https://www.google.com/maps/search/?api=1&query=" +
-        lastLat + "," + lastLon;
-
-    window.open(url, "_blank");
-
+    if (lastLat === null || lastLon === null) return;
+    window.open("https://www.google.com/maps/search/?api=1&query=" + lastLat + "," + lastLon, "_blank");
 }
 
-
-function valueOrDash(value) {
-
-    if (value === undefined || value === null || value === "") {
-        return "-";
-    }
-
-    return value;
-
+function valueOrDash(val) {
+    return (val === undefined || val === null || val === "") ? "-" : val;
 }
 
-
-function setText(id, value) {
-
-    const element = document.getElementById(id);
-
-    if (element) {
-        element.innerText = valueOrDash(value);
-    }
-
+function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = valueOrDash(val);
 }
-
 
 function toggleCells(prefix) {
-
     const body = document.getElementById(prefix + "Body");
     const toggle = document.getElementById(prefix + "Toggle");
-
-    if (!body || !toggle) {
-        return;
-    }
-
+    if (!body || !toggle) return;
     body.classList.toggle("open");
     toggle.classList.toggle("open");
-
 }
 
-
 function updateCellVoltages(containerId, cellVoltages) {
-
     const container = document.getElementById(containerId);
-
-    if (!container) {
-        return;
-    }
-
+    if (!container) return;
+    
     if (!Array.isArray(cellVoltages) || cellVoltages.length === 0) {
-        container.innerHTML =
-            "<p style='color:#94a3b8;margin:0;'>No cell data</p>";
+        container.innerHTML = "<p style='color:var(--text-muted);margin:0;grid-column:1/-1;text-align:center;font-size:12px;'>No cell feed</p>";
         return;
     }
 
     const maxV = Math.max(...cellVoltages);
     const minV = Math.min(...cellVoltages);
-
     container.innerHTML = "";
 
-    cellVoltages.forEach(function (raw, index) {
-
+    cellVoltages.forEach((raw, index) => {
         const volts = (Number(raw) / 1000).toFixed(3);
-
         const cell = document.createElement("div");
-
-        let cls = "cell";
-
-        if (raw === maxV) {
-            cls += " max";
-        } else if (raw === minV) {
-            cls += " min";
-        }
-
+        let cls = "cell-unit";
+        
+        if (raw === maxV) cls += " max";
+        else if (raw === minV) cls += " min";
+        
         cell.className = cls;
-
-        cell.innerHTML =
-            "<div class='cell-num'>Cell " + (index + 1) + "</div>" +
-            "<div class='cell-v'>" + volts + " V</div>";
-
+        cell.innerHTML = 
+            "<div class='num'>C" + (index + 1) + "</div>" +
+            "<div class='volts'>" + volts + "</div>";
         container.appendChild(cell);
-
     });
-
 }
-
 
 function updateBattery(prefix, battery) {
-
-    if (!battery) {
-        return;
-    }
+    if (!battery) return;
 
     setText(prefix + "Id", battery.bmsId);
-
-    // BMS voltage is sent as: 7993 = 79.93 V
-    if (battery.voltage !== undefined) {
-        setText(
-            prefix + "Voltage",
-            (Number(battery.voltage) / 100).toFixed(2) + " V"
-        );
-    }
-
-    // Current is sent in 0.1 A units: 123 = 12.3 A
-    if (battery.current !== undefined) {
-        setText(
-            prefix + "Current",
-            (Number(battery.current) / 10).toFixed(1) + " A"
-        );
-    }
-
-    if (battery.soc !== undefined) {
-
-        const soc = Number(battery.soc);
-
-        setText(prefix + "Soc", soc + " %");
-
-        const bar = document.getElementById(prefix + "SocBar");
-
-        if (bar) {
-            bar.style.width =
-                Math.max(0, Math.min(100, soc)) + "%";
-        }
-
-    }
-
-    if (battery.soh !== undefined) {
-        setText(prefix + "Soh", battery.soh + " %");
-    }
-
-    if (battery.temperature !== undefined) {
-        setText(prefix + "Temperature", battery.temperature + " °C");
-    }
-
-    if (battery.Capacity !== undefined) {
-        setText(prefix + "Capacity", battery.Capacity);
-    }
-
-    if (battery.cycleCount !== undefined) {
-        setText(prefix + "Cycle", battery.cycleCount);
-    }
-
-    if (battery.cellDiff !== undefined) {
-        setText(prefix + "CellDiff", battery.cellDiff);
-    }
-
-    if (battery.errors !== undefined) {
-        setText(prefix + "Errors", battery.errors);
-    }
-
+    if (battery.voltage !== undefined) setText(prefix + "Voltage", (Number(battery.voltage) / 100).toFixed(2) + " V");
+    if (battery.current !== undefined) setText(prefix + "Current", (Number(battery.current) / 10).toFixed(1) + " A");
+    if (battery.soc !== undefined) setText(prefix + "Soc", battery.soc + " %");
+    if (battery.soh !== undefined) setText(prefix + "Soh", battery.soh + " %");
+    if (battery.temperature !== undefined) setText(prefix + "Temperature", battery.temperature + " °C");
+    if (battery.Capacity !== undefined) setText(prefix + "Capacity", battery.Capacity);
+    if (battery.cycleCount !== undefined) setText(prefix + "Cycle", battery.cycleCount);
+    if (battery.cellDiff !== undefined) setText(prefix + "CellDiff", battery.cellDiff);
+    if (battery.errors !== undefined) setText(prefix + "Errors", battery.errors);
+    
     updateCellVoltages(prefix + "Cells", battery.cellVoltages);
-
 }
 
-
 function updateCombined(battery1, battery2) {
-
     const b1 = battery1 || {};
     const b2 = battery2 || {};
-
     const haveB1 = battery1 !== undefined && battery1 !== null;
     const haveB2 = battery2 !== undefined && battery2 !== null;
 
-    if (!haveB1 && !haveB2) {
-        return;
-    }
-
-    // Combined SOC: weighted by each battery's capacity so a
-    // bigger pack counts for more of the overall percentage.
-    // Falls back to a plain average if capacity is missing.
+    if (!haveB1 && !haveB2) return;
 
     const cap1 = Number(b1.Capacity) || 0;
     const cap2 = Number(b2.Capacity) || 0;
     const soc1 = Number(b1.soc);
     const soc2 = Number(b2.soc);
-
     let combinedSoc = null;
 
     if (!isNaN(soc1) && !isNaN(soc2)) {
-
-        combinedSoc = (cap1 + cap2 > 0)
-            ? (soc1 * cap1 + soc2 * cap2) / (cap1 + cap2)
-            : (soc1 + soc2) / 2;
-
+        combinedSoc = (cap1 + cap2 > 0) ? (soc1 * cap1 + soc2 * cap2) / (cap1 + cap2) : (soc1 + soc2) / 2;
     } else if (!isNaN(soc1)) {
         combinedSoc = soc1;
     } else if (!isNaN(soc2)) {
@@ -945,135 +834,89 @@ function updateCombined(battery1, battery2) {
     }
 
     if (combinedSoc !== null) {
-
         setText("combinedSoc", combinedSoc.toFixed(1) + " %");
-
         const bar = document.getElementById("combinedSocBar");
-
-        if (bar) {
-            bar.style.width =
-                Math.max(0, Math.min(100, combinedSoc)) + "%";
-        }
-
+        if (bar) bar.style.width = Math.max(0, Math.min(100, combinedSoc)) + "%";
     }
 
-    // Combined capacity: simple sum of both packs
-
-    if (cap1 || cap2) {
-        setText("combinedCapacity", cap1 + cap2);
-    }
-
-    // Combined current: sum of both packs (0.1 A units)
+    if (cap1 || cap2) setText("combinedCapacity", (cap1 + cap2) + " Ah");
 
     const cur1 = Number(b1.current);
     const cur2 = Number(b2.current);
 
     if (!isNaN(cur1) || !isNaN(cur2)) {
-
-        const totalCurrent =
-            (isNaN(cur1) ? 0 : cur1) + (isNaN(cur2) ? 0 : cur2);
-
-        setText(
-            "combinedCurrent",
-            (totalCurrent / 10).toFixed(1) + " A"
-        );
-
+        const totalCurrent = (isNaN(cur1) ? 0 : cur1) + (isNaN(cur2) ? 0 : cur2);
+        setText("combinedCurrent", (totalCurrent / 10).toFixed(1) + " A");
     }
 
+    // Range Estimation (Wh / 18 Wh per km average consumption)
+    const CONSUMPTION_WH_KM = 18; 
+    let totalAvailableWh = 0;
+
+    if (haveB1 && cap1 > 0 && b1.voltage && !isNaN(soc1)) {
+        totalAvailableWh += ((Number(b1.voltage) / 100) * cap1 * (soc1 / 100));
+    }
+    if (haveB2 && cap2 > 0 && b2.voltage && !isNaN(soc2)) {
+        totalAvailableWh += ((Number(b2.voltage) / 100) * cap2 * (soc2 / 100));
+    }
+
+    if (totalAvailableWh > 0) {
+        setText("combinedRange", (totalAvailableWh / CONSUMPTION_WH_KM).toFixed(1));
+    } else {
+        setText("combinedRange", "--");
+    }
 }
 
-
 async function updateDashboard() {
-
     try {
-
         const response = await fetch("/api/data?t=" + Date.now());
-
-        if (!response.ok) {
-            throw new Error("HTTP " + response.status);
-        }
-
+        if (!response.ok) throw new Error("HTTP " + response.status);
         const result = await response.json();
 
-        console.log("Dashboard data:", result);
-
-        if (!result.data) {
-            return;
-        }
-
-        // T-Box info
+        if (!result.data) return;
 
         setText("tboxId", result.tboxId);
         setText("softwareVersion", result.data.sv);
 
         const receivedTime = Number(result.received_time || 0);
-
         if (receivedTime > 0) {
-            const date = new Date(receivedTime * 1000);
-            setText("lastUpdate", date.toLocaleString());
+            setText("lastUpdate", new Date(receivedTime * 1000).toLocaleTimeString());
         }
-
-        // Connection status
 
         const age = Date.now() / 1000 - receivedTime;
         const status = document.getElementById("connectionStatus");
-
+        
         if (status) {
-
             if (receivedTime > 0 && age < 60) {
-                status.innerText = "Online";
+                status.innerHTML = '<i class="fa-solid fa-circle-check"></i> ONLINE';
                 status.classList.remove("offline");
             } else {
-                status.innerText = "Offline";
+                status.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> OFFLINE';
                 status.classList.add("offline");
             }
-
         }
-
-        // Batteries
 
         updateBattery("b1", result.data.Battery1);
         updateBattery("b2", result.data.Battery2);
-
-        // Combined pack
-
         updateCombined(result.data.Battery1, result.data.Battery2);
 
-        // GPS
-
         const mapBtn = document.getElementById("mapBtn");
-
-        if (result.gps &&
-            result.gps.Latitude !== undefined &&
-            result.gps.Longitude !== undefined) {
-
+        if (result.gps && result.gps.Latitude !== undefined && result.gps.Longitude !== undefined) {
             setText("latitude", result.gps.Latitude);
             setText("longitude", result.gps.Longitude);
-
             lastLat = result.gps.Latitude;
             lastLon = result.gps.Longitude;
-
-            if (mapBtn) {
-                mapBtn.disabled = false;
-            }
-
+            if (mapBtn) mapBtn.disabled = false;
         } else if (mapBtn) {
             mapBtn.disabled = true;
         }
-
     } catch (error) {
         console.error("Dashboard error:", error);
     }
-
 }
-
 
 updateDashboard();
 setInterval(updateDashboard, 3000);
-
 </script>
-
-
 </body>
-
 </html>
