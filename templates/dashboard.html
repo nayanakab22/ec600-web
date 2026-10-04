@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Dashboard</title>
+    <title> Dashboard</title>
 
     <style>
 
@@ -231,6 +231,54 @@
             cursor: not-allowed;
         }
 
+        /* ===== GPS popup modal ===== */
+
+        .header h1 {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 420px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-close:hover {
+            color: #111827;
+        }
+
         .status {
             display: inline-block;
             padding: 6px 12px;
@@ -286,10 +334,10 @@
 
 <div class="header">
 
-    <h1>Dashboard</h1>
+    <h1 id="dashboardTitle"> Dashboard</h1>
 
     <p>
-        Wellcome
+        Wellcom
     </p>
 
 </div>
@@ -307,7 +355,7 @@
         <div class="top-info">
 
             <div class="info-item">
-                <div class="info-label">T-Box</div>
+                <div class="info-label">Box</div>
                 <div class="info-value" id="tboxId">-</div>
             </div>
 
@@ -339,13 +387,13 @@
     <div class="top-card">
 
         <div class="battery-title" style="margin-bottom:14px;">
-            Combined Pack
+            Pack
         </div>
 
         <div class="data-grid">
 
             <div class="data-box soc-box">
-                <div class="data-label">SOC</div>
+                <div class="data-label"> SOC</div>
                 <div class="data-value" id="combinedSoc">- %</div>
                 <div class="soc-bar">
                     <div class="soc-fill" id="combinedSocBar"></div>
@@ -353,7 +401,7 @@
             </div>
 
             <div class="data-box">
-                <div class="data-label">Capacity</div>
+                <div class="data-label"> Capacity</div>
                 <div class="data-value" id="combinedCapacity">-</div>
             </div>
 
@@ -518,34 +566,47 @@
     </div>
 
 
-    <!-- =====================================================
-         GPS
-         ===================================================== -->
+</div>
 
-    <div class="gps-card">
 
-        <h2>GPS</h2>
+<!-- =====================================================
+     GPS POPUP (hidden until the title is clicked 5x)
+     ===================================================== -->
 
-        <div class="data-grid">
+<div class="modal-overlay" id="gpsModal">
 
-            <div class="data-box">
-                <div class="data-label">Latitude</div>
-                <div class="data-value" id="latitude">-</div>
+    <div class="modal-box">
+
+        <button class="modal-close" onclick="closeGpsModal()">
+            &times;
+        </button>
+
+        <div class="gps-card" style="margin-top:0;box-shadow:none;padding:0;">
+
+            <h2>GPS</h2>
+
+            <div class="data-grid">
+
+                <div class="data-box">
+                    <div class="data-label">Latitude</div>
+                    <div class="data-value" id="latitude">-</div>
+                </div>
+
+                <div class="data-box">
+                    <div class="data-label">Longitude</div>
+                    <div class="data-value" id="longitude">-</div>
+                </div>
+
             </div>
 
-            <div class="data-box">
-                <div class="data-label">Longitude</div>
-                <div class="data-value" id="longitude">-</div>
-            </div>
+            <button id="mapBtn"
+                    class="map-btn"
+                    onclick="openInGoogleMaps()"
+                    disabled>
+                📍 View on Google Maps
+            </button>
 
         </div>
-
-        <button id="mapBtn"
-                class="map-btn"
-                onclick="openInGoogleMaps()"
-                disabled>
-            📍 View on Google Maps
-        </button>
 
     </div>
 
@@ -556,6 +617,76 @@
 
 let lastLat = null;
 let lastLon = null;
+
+
+// ---------------------------------------------------------
+// Secret GPS popup: click the title 5 times within 3
+// seconds to reveal it.
+// ---------------------------------------------------------
+
+let titleClickCount = 0;
+let titleClickTimer = null;
+
+const TITLE_CLICKS_NEEDED = 5;
+const TITLE_CLICK_WINDOW_MS = 3000;
+
+
+function handleTitleClick() {
+
+    titleClickCount += 1;
+
+    if (titleClickTimer) {
+        clearTimeout(titleClickTimer);
+    }
+
+    titleClickTimer = setTimeout(function () {
+        titleClickCount = 0;
+    }, TITLE_CLICK_WINDOW_MS);
+
+    if (titleClickCount >= TITLE_CLICKS_NEEDED) {
+        titleClickCount = 0;
+        clearTimeout(titleClickTimer);
+        openGpsModal();
+    }
+
+}
+
+
+function openGpsModal() {
+
+    const modal = document.getElementById("gpsModal");
+
+    if (modal) {
+        modal.classList.add("show");
+    }
+
+}
+
+
+function closeGpsModal() {
+
+    const modal = document.getElementById("gpsModal");
+
+    if (modal) {
+        modal.classList.remove("show");
+    }
+
+}
+
+
+document.getElementById("dashboardTitle")
+    .addEventListener("click", handleTitleClick);
+
+
+// close the popup if the dark overlay itself is clicked
+document.getElementById("gpsModal")
+    .addEventListener("click", function (e) {
+
+        if (e.target.id === "gpsModal") {
+            closeGpsModal();
+        }
+
+    });
 
 
 function openInGoogleMaps() {
