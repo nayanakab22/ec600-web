@@ -13,8 +13,8 @@
     <style>
         :root {
             --bg-cockpit: #05070b;
-            --panel-bg: rgba(13, 19, 33, 0.7);
-            --panel-border: rgba(56, 189, 248, 0.15);
+            --panel-bg: #0d1321;
+            --panel-border: rgba(56, 189, 248, 0.2);
             --text-main: #f8fafc;
             --text-muted: #64748b;
             --neon-blue: #38bdf8;
@@ -30,41 +30,40 @@
 
         body {
             margin: 0;
+            padding: 0;
             font-family: 'Outfit', sans-serif;
             background: var(--bg-cockpit);
             color: var(--text-main);
+            width: 100vw;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-        }
-
-        /* Ambient background glow */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.08), transparent 60%);
-            z-index: -1;
         }
 
         /* ===== Cockpit Header Bar ===== */
         .dash-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 28px;
-            background: rgba(13, 19, 33, 0.9);
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(13, 19, 33, 0.95);
             border-bottom: 1px solid var(--panel-border);
             backdrop-filter: blur(12px);
         }
 
+        .dash-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .dash-title {
             margin: 0;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             color: #fff;
             cursor: pointer;
             user-select: none;
@@ -74,12 +73,36 @@
             color: var(--neon-blue);
         }
 
+        .connection-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--neon-green);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .connection-pill.offline {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--neon-red);
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
         .telemetry-meta {
-            display: flex;
-            gap: 24px;
-            font-size: 13px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            font-size: 11px;
             font-family: 'JetBrains Mono', monospace;
             color: var(--text-muted);
+            background: rgba(0,0,0,0.3);
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
         }
 
         .meta-item span {
@@ -87,53 +110,25 @@
             font-weight: 700;
         }
 
-        .connection-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: rgba(52, 211, 153, 0.1);
-            color: var(--neon-green);
-            border: 1px solid rgba(52, 211, 153, 0.3);
+        /* ===== Main Layout Container ===== */
+        .cockpit-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .connection-pill.offline {
-            background: rgba(248, 113, 113, 0.1);
-            color: var(--neon-red);
-            border-color: rgba(248, 113, 113, 0.3);
-        }
-
-        /* ===== Main Layout Grid (Automotive Cluster) ===== */
-        .cockpit-grid {
-            max-width: 1500px;
-            margin: 20px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 20px;
-        }
-
-        @media(max-width: 1100px) {
-            .cockpit-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ===== Master EV HUD Column (Combined Pack Centerpiece) ===== */
+        /* ===== Master EV HUD (Combined Pack) ===== */
         .hud-master {
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 28px;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            border-radius: 16px;
+            padding: 16px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
         .hud-master::after {
@@ -144,93 +139,91 @@
         }
 
         .hud-title {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             color: var(--text-muted);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        /* Large Central Range & SOC Gauge Styling */
         .central-gauge-container {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 14px;
         }
 
         .range-massive {
-            font-size: 64px;
+            font-size: 52px;
             font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
             color: #fff;
             line-height: 1;
-            text-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
         }
 
         .range-massive span {
-            font-size: 20px;
+            font-size: 16px;
             color: var(--neon-blue);
             font-weight: 600;
         }
 
         .range-label {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
-        /* EV Gauge Readouts */
         .ev-metrics-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 14px;
+            gap: 10px;
         }
 
         .ev-metric-box {
             background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 12px;
-            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 10px 12px;
         }
 
         .ev-metric-label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .ev-metric-val {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             color: #fff;
         }
 
         .master-soc-wrap {
-            margin-top: 16px;
+            margin-top: 14px;
         }
 
         .soc-info-row {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            color: var(--text-muted);
         }
 
         .cluster-bar {
-            height: 8px;
+            height: 6px;
             background: rgba(255,255,255,0.08);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
         }
 
@@ -238,33 +231,17 @@
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
-            border-radius: 4px;
+            border-radius: 3px;
             transition: width 0.6s ease;
         }
 
-
-        /* ===== Individual Packs Column (Battery 1 & 2 Dual Panels) ===== */
-        .packs-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media(max-width: 800px) {
-            .packs-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        /* ===== Individual Pack Panels ===== */
         .pack-panel {
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 24px;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
         .pack-header {
@@ -272,77 +249,74 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.06);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .pack-name {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: #fff;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .pack-id {
-            font-size: 12px;
+            font-size: 11px;
             font-family: 'JetBrains Mono', monospace;
             color: var(--neon-blue);
             background: rgba(56, 189, 248, 0.1);
-            padding: 3px 8px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
-        /* Parameter Telemetry Grids */
         .params-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 14px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
         .param-cell {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 8px;
         }
 
         .param-title {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .param-val {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             color: #fff;
         }
 
-        /* Error and Warning Bar */
         .alert-bar {
             background: rgba(251, 191, 36, 0.08);
             border: 1px solid rgba(251, 191, 36, 0.2);
             color: var(--neon-amber);
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-size: 12px;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 11px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
+            gap: 6px;
+            margin-bottom: 10px;
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Cell Voltages Accordion Drawer */
+        /* Cell Voltages Dropdown */
         .cells-accordion {
             border-top: 1px solid rgba(255,255,255,0.06);
-            padding-top: 12px;
+            padding-top: 10px;
         }
 
         .cells-trigger {
@@ -350,25 +324,20 @@
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.06);
             color: var(--text-main);
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-family: 'Outfit', sans-serif;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .cells-trigger:hover {
-            background: rgba(255,255,255,0.06);
         }
 
         .cells-trigger .chevron {
             color: var(--text-muted);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
         }
 
         .cells-trigger.open .chevron {
@@ -378,124 +347,105 @@
         .cells-dropdown {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: max-height 0.3s ease;
         }
 
         .cells-dropdown.open {
-            max-height: 350px;
-            margin-top: 12px;
+            max-height: 300px;
+            margin-top: 10px;
             overflow-y: auto;
         }
 
         .cells-matrix {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 6px;
+            gap: 4px;
         }
 
         .cell-unit {
             background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 6px;
-            padding: 6px 4px;
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 4px;
+            padding: 4px 2px;
             text-align: center;
         }
 
         .cell-unit .num {
-            font-size: 9px;
+            font-size: 8px;
             color: var(--text-muted);
-            text-transform: uppercase;
         }
 
         .cell-unit .volts {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
-            margin-top: 2px;
             color: #fff;
         }
 
         .cell-unit.max {
-            background: rgba(248, 113, 113, 0.15);
+            background: rgba(248, 113, 113, 0.2);
             border-color: rgba(248, 113, 113, 0.4);
         }
         .cell-unit.max .volts { color: var(--neon-red); }
 
         .cell-unit.min {
-            background: rgba(56, 189, 248, 0.15);
+            background: rgba(56, 189, 248, 0.2);
             border-color: rgba(56, 189, 248, 0.4);
         }
         .cell-unit.min .volts { color: var(--neon-blue); }
 
-
-        /* ===== GPS Modal (Cockpit Overlay) ===== */
+        /* GPS Modal */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(3, 7, 18, 0.85);
+            background: rgba(3, 7, 18, 0.9);
             backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            padding: 16px;
         }
 
-        .modal-overlay.show {
-            display: flex;
-            opacity: 1;
-        }
+        .modal-overlay.show { display: flex; }
 
         .modal-cockpit {
             background: #0d1321;
             border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 28px;
-            max-width: 400px;
+            border-radius: 16px;
+            padding: 20px;
             width: 100%;
+            max-width: 360px;
             position: relative;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
 
         .modal-close {
             position: absolute;
-            top: 16px; right: 16px;
+            top: 12px; right: 12px;
             background: rgba(255,255,255,0.05);
             border: none;
             border-radius: 50%;
-            width: 32px; height: 32px;
+            width: 28px; height: 28px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        .modal-close:hover {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
         }
 
         .map-trigger-btn {
-            margin-top: 20px;
+            margin-top: 16px;
             width: 100%;
             background: var(--neon-blue);
             color: #030712;
             border: none;
-            border-radius: 10px;
-            padding: 14px;
-            font-size: 14px;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: background 0.2s;
+            gap: 6px;
         }
-
-        .map-trigger-btn:hover { background: #7dd3fc; }
-        .map-trigger-btn:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
     </style>
 </head>
 
@@ -503,50 +453,48 @@
 
 <!-- Cockpit Header -->
 <div class="dash-header">
-    <h1 class="dash-title" id="dashboardTitle">
-        <i class="fa-solid fa-gauge-high"></i> E-BIKE TELEMETRY HUD
-    </h1>
+    <div class="dash-header-top">
+        <h1 class="dash-title" id="dashboardTitle">
+            <i class="fa-solid fa-gauge-high"></i> E-BIKE HUD
+        </h1>
+        <span id="connectionStatus" class="connection-pill offline">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Standby
+        </span>
+    </div>
     <div class="telemetry-meta">
         <div class="meta-item">EMU: <span id="tboxId">-</span></div>
         <div class="meta-item">VER: <span id="softwareVersion">-</span></div>
         <div class="meta-item">SYNC: <span id="lastUpdate">-</span></div>
-        <div>
-            <span id="connectionStatus" class="connection-pill offline">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Standby
-            </span>
-        </div>
     </div>
 </div>
 
-<!-- Cockpit Cluster Layout -->
-<div class="cockpit-grid">
+<!-- Cockpit Container -->
+<div class="cockpit-container">
 
     <!-- MASTER HUD (Combined Pack & Range Focus) -->
     <div class="hud-master">
-        <div>
-            <div class="hud-title"><i class="fa-solid fa-bolt-lightning"></i> Combined Master Pack</div>
-            
-            <div class="central-gauge-container">
-                <div class="range-massive" id="combinedRange">--<span>km</span></div>
-                <div class="range-label">Estimated Range Remaining</div>
-            </div>
+        <div class="hud-title"><i class="fa-solid fa-bolt-lightning"></i> Combined Master Pack</div>
+        
+        <div class="central-gauge-container">
+            <div class="range-massive" id="combinedRange">--<span>km</span></div>
+            <div class="range-label">Est. Range Remaining</div>
+        </div>
 
-            <div class="ev-metrics-grid">
-                <div class="ev-metric-box">
-                    <div class="ev-metric-label">Total Capacity</div>
-                    <div class="ev-metric-val" id="combinedCapacity">-</div>
-                </div>
-                <div class="ev-metric-box">
-                    <div class="ev-metric-label">Net Current</div>
-                    <div class="ev-metric-val" id="combinedCurrent">- A</div>
-                </div>
+        <div class="ev-metrics-grid">
+            <div class="ev-metric-box">
+                <div class="ev-metric-label">Total Capacity</div>
+                <div class="ev-metric-val" id="combinedCapacity">-</div>
+            </div>
+            <div class="ev-metric-box">
+                <div class="ev-metric-label">Net Current</div>
+                <div class="ev-metric-val" id="combinedCurrent">- A</div>
             </div>
         </div>
 
         <div class="master-soc-wrap">
             <div class="soc-info-row">
                 <span>PACK STATE OF CHARGE</span>
-                <span id="combinedSoc" style="font-family:'JetBrains Mono', monospace;">- %</span>
+                <span id="combinedSoc" style="font-family:'JetBrains Mono', monospace; color:#fff;">- %</span>
             </div>
             <div class="cluster-bar">
                 <div class="cluster-fill" id="combinedSocBar"></div>
@@ -554,129 +502,120 @@
         </div>
     </div>
 
-    <!-- DUAL INDIVIDUAL BATTERY PANELS -->
-    <div class="packs-container">
+    <!-- BATTERY 1 -->
+    <div class="pack-panel">
+        <div class="pack-header">
+            <div class="pack-name"><i class="fa-solid fa-battery-half"></i> Battery 1</div>
+            <div class="pack-id" id="b1Id">-</div>
+        </div>
 
-        <!-- BATTERY 1 -->
-        <div class="pack-panel">
-            <div>
-                <div class="pack-header">
-                    <div class="pack-name"><i class="fa-solid fa-battery-half"></i> Battery 1</div>
-                    <div class="pack-id" id="b1Id">-</div>
-                </div>
-
-                <div class="params-grid">
-                    <div class="param-cell">
-                        <div class="param-title">Voltage</div>
-                        <div class="param-val" id="b1Voltage">- V</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Current</div>
-                        <div class="param-val" id="b1Current">- A</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">SOC</div>
-                        <div class="param-val" id="b1Soc">- %</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">SOH</div>
-                        <div class="param-val" id="b1Soh">- %</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Temp</div>
-                        <div class="param-val" id="b1Temperature">- °C</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Capacity</div>
-                        <div class="param-val" id="b1Capacity">-</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Cycles</div>
-                        <div class="param-val" id="b1Cycle">-</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Cell Diff</div>
-                        <div class="param-val" id="b1CellDiff">-</div>
-                    </div>
-                </div>
-
-                <div class="alert-bar">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>Errors: <span id="b1Errors">-</span></span>
-                </div>
+        <div class="params-grid">
+            <div class="param-cell">
+                <div class="param-title">Voltage</div>
+                <div class="param-val" id="b1Voltage">- V</div>
             </div>
-
-            <div class="cells-accordion">
-                <button class="cells-trigger" id="b1Toggle" onclick="toggleCells('b1')">
-                    <span>Cell Voltages Breakdown</span>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </button>
-                <div class="cells-dropdown" id="b1Body">
-                    <div class="cells-matrix" id="b1Cells"></div>
-                </div>
+            <div class="param-cell">
+                <div class="param-title">Current</div>
+                <div class="param-val" id="b1Current">- A</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">SOC</div>
+                <div class="param-val" id="b1Soc">- %</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">SOH</div>
+                <div class="param-val" id="b1Soh">- %</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Temp</div>
+                <div class="param-val" id="b1Temperature">- °C</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Capacity</div>
+                <div class="param-val" id="b1Capacity">-</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Cycles</div>
+                <div class="param-val" id="b1Cycle">-</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Cell Diff</div>
+                <div class="param-val" id="b1CellDiff">-</div>
             </div>
         </div>
 
-        <!-- BATTERY 2 -->
-        <div class="pack-panel">
-            <div>
-                <div class="pack-header">
-                    <div class="pack-name"><i class="fa-solid fa-battery-half"></i> Battery 2</div>
-                    <div class="pack-id" id="b2Id">-</div>
-                </div>
+        <div class="alert-bar">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Errors: <span id="b1Errors">-</span></span>
+        </div>
 
-                <div class="params-grid">
-                    <div class="param-cell">
-                        <div class="param-title">Voltage</div>
-                        <div class="param-val" id="b2Voltage">- V</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Current</div>
-                        <div class="param-val" id="b2Current">- A</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">SOC</div>
-                        <div class="param-val" id="b2Soc">- %</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">SOH</div>
-                        <div class="param-val" id="b2Soh">- %</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Temp</div>
-                        <div class="param-val" id="b2Temperature">- °C</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Capacity</div>
-                        <div class="param-val" id="b2Capacity">-</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Cycles</div>
-                        <div class="param-val" id="b2Cycle">-</div>
-                    </div>
-                    <div class="param-cell">
-                        <div class="param-title">Cell Diff</div>
-                        <div class="param-val" id="b2CellDiff">-</div>
-                    </div>
-                </div>
-
-                <div class="alert-bar">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>Errors: <span id="b2Errors">-</span></span>
-                </div>
+        <div class="cells-accordion">
+            <button class="cells-trigger" id="b1Toggle" onclick="toggleCells('b1')">
+                <span>Cell Voltages Breakdown</span>
+                <i class="fa-solid fa-chevron-down chevron"></i>
+            </button>
+            <div class="cells-dropdown" id="b1Body">
+                <div class="cells-matrix" id="b1Cells"></div>
             </div>
+        </div>
+    </div>
 
-            <div class="cells-accordion">
-                <button class="cells-trigger" id="b2Toggle" onclick="toggleCells('b2')">
-                    <span>Cell Voltages Breakdown</span>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </button>
-                <div class="cells-dropdown" id="b2Body">
-                    <div class="cells-matrix" id="b2Cells"></div>
-                </div>
+    <!-- BATTERY 2 -->
+    <div class="pack-panel">
+        <div class="pack-header">
+            <div class="pack-name"><i class="fa-solid fa-battery-half"></i> Battery 2</div>
+            <div class="pack-id" id="b2Id">-</div>
+        </div>
+
+        <div class="params-grid">
+            <div class="param-cell">
+                <div class="param-title">Voltage</div>
+                <div class="param-val" id="b2Voltage">- V</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Current</div>
+                <div class="param-val" id="b2Current">- A</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">SOC</div>
+                <div class="param-val" id="b2Soc">- %</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">SOH</div>
+                <div class="param-val" id="b2Soh">- %</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Temp</div>
+                <div class="param-val" id="b2Temperature">- °C</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Capacity</div>
+                <div class="param-val" id="b2Capacity">-</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Cycles</div>
+                <div class="param-val" id="b2Cycle">-</div>
+            </div>
+            <div class="param-cell">
+                <div class="param-title">Cell Diff</div>
+                <div class="param-val" id="b2CellDiff">-</div>
             </div>
         </div>
 
+        <div class="alert-bar">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Errors: <span id="b2Errors">-</span></span>
+        </div>
+
+        <div class="cells-accordion">
+            <button class="cells-trigger" id="b2Toggle" onclick="toggleCells('b2')">
+                <span>Cell Voltages Breakdown</span>
+                <i class="fa-solid fa-chevron-down chevron"></i>
+            </button>
+            <div class="cells-dropdown" id="b2Body">
+                <div class="cells-matrix" id="b2Cells"></div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -685,18 +624,18 @@
 <div class="modal-overlay" id="gpsModal">
     <div class="modal-cockpit">
         <button class="modal-close" onclick="closeGpsModal()"><i class="fa-solid fa-xmark"></i></button>
-        <h3 style="margin-top: 0; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <h3 style="margin-top: 0; color: #fff; font-size: 16px; display: flex; align-items: center; gap: 6px;">
             <i class="fa-solid fa-location-crosshairs" style="color:var(--neon-blue);"></i> Telemetry GPS Fix
         </h3>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
             <div class="param-cell">
                 <div class="param-title">Latitude</div>
-                <div class="param-val" id="latitude" style="font-size: 14px;">-</div>
+                <div class="param-val" id="latitude" style="font-size: 12px;">-</div>
             </div>
             <div class="param-cell">
                 <div class="param-title">Longitude</div>
-                <div class="param-val" id="longitude" style="font-size: 14px;">-</div>
+                <div class="param-val" id="longitude" style="font-size: 12px;">-</div>
             </div>
         </div>
 
@@ -710,7 +649,6 @@
 let lastLat = null;
 let lastLon = null;
 
-// Secret GPS trigger: click the header title 5 times within 3 seconds
 let titleClickCount = 0;
 let titleClickTimer = null;
 const TITLE_CLICKS_NEEDED = 5;
@@ -770,7 +708,7 @@ function updateCellVoltages(containerId, cellVoltages) {
     if (!container) return;
     
     if (!Array.isArray(cellVoltages) || cellVoltages.length === 0) {
-        container.innerHTML = "<p style='color:var(--text-muted);margin:0;grid-column:1/-1;text-align:center;font-size:12px;'>No cell feed</p>";
+        container.innerHTML = "<p style='color:var(--text-muted);margin:0;grid-column:1/-1;text-align:center;font-size:11px;'>No cell feed</p>";
         return;
     }
 
@@ -849,7 +787,6 @@ function updateCombined(battery1, battery2) {
         setText("combinedCurrent", (totalCurrent / 10).toFixed(1) + " A");
     }
 
-    // Range Estimation (Wh / 18 Wh per km average consumption)
     const CONSUMPTION_WH_KM = 18; 
     let totalAvailableWh = 0;
 
