@@ -446,6 +446,11 @@
             justify-content: center;
             gap: 6px;
         }
+
+        .map-trigger-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -478,7 +483,7 @@
         <div class="hud-title"><i class="fa-solid fa-bolt-lightning"></i> Combined Master Pack</div>
         
         <div class="central-gauge-container">
-            <div class="range-massive" id="combinedRange">--<span>km</span></div>
+            <div class="range-massive"><span id="combinedRange">--</span><span>km</span></div>
             <div class="range-label">Est. Range Remaining</div>
         </div>
 
@@ -648,8 +653,11 @@
 </div>
 
 <script>
+// ===== Held values (kept until valid new data arrives) =====
 let lastLat = null;
 let lastLon = null;
+let lastCombinedSoc = null;   // combined SOC in %
+let lastVbat = null;          // backup battery in volts
 
 let titleClickCount = 0;
 let titleClickTimer = null;
@@ -696,8 +704,10 @@ function setText(id, val) {
     const el = document.getElementById(id);
     if (el) el.innerText = valueOrDash(val);
 }
+
+// ===== ACC (12V power) and BUP (backup battery) =====
 function updatePowerInfo(data) {
-    // ACC: 12V external power (1 = ON, 0 = OFF)
+    // ACC: 1 = 12V ON, 0 = 12V OFF
     const accEl = document.getElementById("acc");
     if (accEl) {
         if (data.acc === 1) {
@@ -706,28 +716,24 @@ function updatePowerInfo(data) {
         } else if (data.acc === 0) {
             accEl.innerText = "OFF";
             accEl.style.color = "var(--neon-red)";
-        } else {
-            accEl.innerText = "-";
-            accEl.style.color = "";
         }
+        // otherwise keep whatever is shown
     }
 
-    // BUP: backup battery voltage (firmware sends millivolts)
+    // BUP: firmware sends millivolts. Hold last value if missing or 0 (ADC fail)
+    const vbatRaw = Number(data.vbat);
+    if (!isNaN(vbatRaw) && vbatRaw > 0) {
+        lastVbat = vbatRaw / 1000;
+    }
+
     const vbatEl = document.getElementById("vbat");
-    if (vbatEl) {
-        if (data.vbat !== undefined && data.vbat !== null) {
-            const volts = Number(data.vbat) / 1000;
-            vbatEl.innerText = volts.toFixed(2) + "V";
-
-            if (volts < 3.4)       vbatEl.style.color = "var(--neon-red)";    // low
-            else if (volts < 3.7)  vbatEl.style.color = "var(--neon-amber)";  // medium
-            else                   vbatEl.style.color = "var(--neon-green)";  // good
-        } else {
-            vbatEl.innerText = "-";
-            vbatEl.style.color = "";
-        }
+    if (vbatEl && lastVbat !== null) {
+        vbatEl.innerText = lastVbat.toFixed(2) + "V";
+        if (lastVbat < 3.4)       vbatEl.style.color = "var(--neon-red)";    // low
+        else if (lastVbat < 3.7)  vbatEl.style.color = "var(--neon-amber)";  // medium
+        else                      vbatEl.style.color = "var(--neon-green)";  // good
     }
-}    
+}
 
 function toggleCells(prefix) {
     const body = document.getElementById(prefix + "Body");
@@ -793,22 +799,28 @@ function updateCombined(battery1, battery2) {
 
     const cap1 = Number(b1.Capacity) || 0;
     const cap2 = Number(b2.Capacity) || 0;
-    const soc1 = Number(b1.soc);
-    const soc2 = Number(b2.soc);
-    let combinedSoc = null;
 
-    if (!isNaN(soc1) && !isNaN(soc2)) {
-        combinedSoc = (cap1 + cap2 > 0) ? (soc1 * cap1 + soc2 * cap2) / (cap1 + cap2) : (soc1 + soc2) / 2;
-    } else if (!isNaN(soc1)) {
-        combinedSoc = soc1;
-    } else if (!isNaN(soc2)) {
-        combinedSoc = soc2;
+    // A battery's SOC counts only if its BMS is responding (voltage > 0)
+    const b1Valid = haveB1 && Number(b1.voltage) > 0 && !isNaN(Number(b1.soc));
+    const b2Valid = haveB2 && Number(b2.voltage) > 0 && !isNaN(Number(b2.soc));
+    const soc1 = b1Valid ? Number(b1.soc) : NaN;
+    const soc2 = b2Valid ? Number(b2.soc) : NaN;
+
+    if (b1Valid && b2Valid) {
+        lastCombinedSoc = (cap1 + cap2 > 0)
+            ? (soc1 * cap1 + soc2 * cap2) / (cap1 + cap2)
+            : (soc1 + soc2) / 2;
+    } else if (b1Valid) {
+        lastCombinedSoc = soc1;
+    } else if (b2Valid) {
+        lastCombinedSoc = soc2;
     }
+    // if neither is valid, lastCombinedSoc keeps its old value
 
-    if (combinedSoc !== null) {
-        setText("combinedSoc", combinedSoc.toFixed(1) + " %");
+    if (lastCombinedSoc !== null) {
+        setText("combinedSoc", lastCombinedSoc.toFixed(1) + " %");
         const bar = document.getElementById("combinedSocBar");
-        if (bar) bar.style.width = Math.max(0, Math.min(100, combinedSoc)) + "%";
+        if (bar) bar.style.width = Math.max(0, Math.min(100, lastCombinedSoc)) + "%";
     }
 
     if (cap1 || cap2) setText("combinedCapacity", (cap1 + cap2) + " Ah");
@@ -824,10 +836,10 @@ function updateCombined(battery1, battery2) {
     const CONSUMPTION_WH_KM = 18; 
     let totalAvailableWh = 0;
 
-    if (haveB1 && cap1 > 0 && b1.voltage && !isNaN(soc1)) {
+    if (b1Valid && cap1 > 0) {
         totalAvailableWh += ((Number(b1.voltage) / 100) * cap1 * (soc1 / 100));
     }
-    if (haveB2 && cap2 > 0 && b2.voltage && !isNaN(soc2)) {
+    if (b2Valid && cap2 > 0) {
         totalAvailableWh += ((Number(b2.voltage) / 100) * cap2 * (soc2 / 100));
     }
 
@@ -836,6 +848,26 @@ function updateCombined(battery1, battery2) {
     } else {
         setText("combinedRange", "--");
     }
+}
+
+// ===== GPS: update only on a valid fix, otherwise hold last position =====
+function updateGps(gps) {
+    const lat = gps ? Number(gps.Latitude) : NaN;
+    const lon = gps ? Number(gps.Longitude) : NaN;
+    const gpsValid = !isNaN(lat) && !isNaN(lon) && !(lat === 0 && lon === 0);
+
+    if (gpsValid) {
+        lastLat = lat;
+        lastLon = lon;
+    }
+
+    if (lastLat !== null) {
+        setText("latitude", lastLat);
+        setText("longitude", lastLon);
+    }
+
+    const mapBtn = document.getElementById("mapBtn");
+    if (mapBtn) mapBtn.disabled = (lastLat === null);
 }
 
 async function updateDashboard() {
@@ -871,17 +903,8 @@ async function updateDashboard() {
         updateBattery("b1", result.data.Battery1);
         updateBattery("b2", result.data.Battery2);
         updateCombined(result.data.Battery1, result.data.Battery2);
+        updateGps(result.gps);
 
-        const mapBtn = document.getElementById("mapBtn");
-        if (result.gps && result.gps.Latitude !== undefined && result.gps.Longitude !== undefined) {
-            setText("latitude", result.gps.Latitude);
-            setText("longitude", result.gps.Longitude);
-            lastLat = result.gps.Latitude;
-            lastLon = result.gps.Longitude;
-            if (mapBtn) mapBtn.disabled = false;
-        } else if (mapBtn) {
-            mapBtn.disabled = true;
-        }
     } catch (error) {
         console.error("Dashboard error:", error);
     }
