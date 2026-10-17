@@ -696,6 +696,38 @@ function setText(id, val) {
     const el = document.getElementById(id);
     if (el) el.innerText = valueOrDash(val);
 }
+function updatePowerInfo(data) {
+    // ACC: 12V external power (1 = ON, 0 = OFF)
+    const accEl = document.getElementById("acc");
+    if (accEl) {
+        if (data.acc === 1) {
+            accEl.innerText = "ON";
+            accEl.style.color = "var(--neon-green)";
+        } else if (data.acc === 0) {
+            accEl.innerText = "OFF";
+            accEl.style.color = "var(--neon-red)";
+        } else {
+            accEl.innerText = "-";
+            accEl.style.color = "";
+        }
+    }
+
+    // BUP: backup battery voltage (firmware sends millivolts)
+    const vbatEl = document.getElementById("vbat");
+    if (vbatEl) {
+        if (data.vbat !== undefined && data.vbat !== null) {
+            const volts = Number(data.vbat) / 1000;
+            vbatEl.innerText = volts.toFixed(2) + "V";
+
+            if (volts < 3.4)       vbatEl.style.color = "var(--neon-red)";    // low
+            else if (volts < 3.7)  vbatEl.style.color = "var(--neon-amber)";  // medium
+            else                   vbatEl.style.color = "var(--neon-green)";  // good
+        } else {
+            vbatEl.innerText = "-";
+            vbatEl.style.color = "";
+        }
+    }
+}    
 
 function toggleCells(prefix) {
     const body = document.getElementById(prefix + "Body");
@@ -816,6 +848,7 @@ async function updateDashboard() {
 
         setText("tboxId", result.tboxId);
         setText("softwareVersion", result.data.sv);
+        updatePowerInfo(result.data);
 
         const receivedTime = Number(result.received_time || 0);
         if (receivedTime > 0) {
